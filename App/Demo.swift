@@ -19,6 +19,9 @@
     enum Demo {
         static let size = CGSize(width: 960, height: 640)
 
+        /// `-MacPatDemoLive` opens the normal window on fixture data, so the grid can be driven by hand.
+        static var live: Bool { ProcessInfo.processInfo.arguments.contains("-MacPatDemoLive") }
+
         static func runIfAsked() {
             let args = ProcessInfo.processInfo.arguments
             guard let i = args.firstIndex(of: "-MacPatDemo"), i + 1 < args.count else { return }
@@ -35,6 +38,7 @@
             try? FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
             let shots: [(String, () async -> AnyView)] = [
                 ("clean", { await CleanDemo.view() }),
+                ("clean-pane", { await CleanDemo.view(commands: false, pane: true) }),
                 ("persistence", { await PersistenceDemo.view() }),
                 ("uninstall", { await UninstallDemo.view() }),
                 ("analyze", { await AnalyzeDemo.view() }),
@@ -43,7 +47,9 @@
             ]
             for (id, make) in shots {
                 for dark in [false, true] {
-                    if let image = await capture(RootView(demo: id, view: await make()), dark: dark) {
+                    if let image = await capture(
+                        RootView(demo: id.hasSuffix("-pane") ? String(id.dropLast(5)) : id, view: await make()), dark: dark)
+                    {
                         write(png: image, to: out.appending(path: "\(id)-\(dark ? "dark" : "light").png"))
                     }
                 }
@@ -52,7 +58,7 @@
                 let suffix = dark ? "dark" : "light"
                 let clean = [
                     await CleanDemo.view(expanded: [], preview: false), await CleanDemo.view(preview: false), await CleanDemo.view(),
-                    await CleanDemo.view(commands: true),
+                    await CleanDemo.view(commands: true), await CleanDemo.view(commands: false, pane: true),
                 ]
                 await gif(clean.map { RootView(demo: "clean", view: $0) }, dark: dark, to: out.appending(path: "clean-flow-\(suffix).gif"))
                 let persist = [await PersistenceDemo.view(preview: false, commands: false), await PersistenceDemo.view()]
@@ -101,6 +107,18 @@
                     dest, frame, [kCGImagePropertyGIFDictionary: [kCGImagePropertyGIFDelayTime: 1.6]] as CFDictionary)
             }
             CGImageDestinationFinalize(dest)
+        }
+    }
+
+    /// The Clean grid on fixture data, in a real window.
+    struct LiveDemo: View {
+        @State private var content: AnyView?
+
+        var body: some View {
+            Group {
+                if let content { RootView(demo: "clean", view: content) } else { Color.clear }
+            }
+            .task { content = await CleanDemo.view(preview: false) }
         }
     }
 #endif

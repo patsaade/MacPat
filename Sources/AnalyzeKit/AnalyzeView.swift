@@ -91,7 +91,7 @@ struct AnalyzeView: View {
             }
             .padding(8)
             RetroRule(thickness: 1)
-            ScrollView {
+            RetroScroll {
                 VStack(spacing: 0) {
                     let top = max(entries.first?.bytes ?? 1, 1)
                     ForEach(entries) { entry in

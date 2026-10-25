@@ -1,36 +1,6 @@
 <!-- SPDX-License-Identifier: MIT -->
 <!-- Copyright (c) 2026 Patrick Saade -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="1024" height="1024">
-  <title>MacPat: a hand patting a computer</title>
   <defs><pattern id="dither" width="2" height="2" patternUnits="userSpaceOnUse"><rect width="1" height="1" fill="#fff"/><rect x="1" y="1" width="1" height="1" fill="#fff"/></pattern></defs>
-  <rect width="100" height="100" rx="22" fill="#000"/>
-  <!-- computer -->
-  <g stroke="#fff" stroke-linejoin="round" stroke-linecap="round">
-    <rect x="20" y="54" width="64" height="36" rx="6" fill="#fff" stroke="none"/>
-    <rect x="16" y="50" width="64" height="36" rx="6" fill="#000" stroke="none"/>
-    <rect x="16" y="50" width="64" height="36" rx="6" fill="url(#dither)" stroke="none"/>
-    <rect x="16" y="50" width="64" height="36" rx="6" fill="none" stroke-width="2.6"/>
-    <rect x="24" y="56" width="48" height="22" rx="3" fill="#000" stroke-width="2.6"/>
-    <path d="M29 62h38M29 67h38M29 72h22" fill="none" stroke-width="1.6"/>
-    <rect x="56" y="80" width="16" height="3" fill="#000" stroke-width="1.6"/>
-    <rect x="24" y="86" width="10" height="4" fill="#fff" stroke="none"/>
-    <rect x="62" y="86" width="10" height="4" fill="#fff" stroke="none"/>
-    <rect x="14" y="95" width="72" height="5" rx="2" fill="#fff" stroke="none"/>
-    <rect x="10" y="92" width="72" height="5" rx="2" fill="#000" stroke-width="2"/>
-  </g>
-  <!-- hand -->
-  <g stroke="#fff" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M88 22.5C80 20.5 70 21 63 24.5H54A3.1 3.1 0 0 0 54 30.7H48.5A3.3 3.3 0 0 0 48.5 37.3H45A3.3 3.3 0 0 0 45 43.9H47A3 3 0 0 0 47 49.9H62C70 51.2 80 51 88 49.5Z" fill="#fff" stroke="none" transform="translate(3 3)"/>
-    <path d="M88 22.5C80 20.5 70 21 63 24.5H54A3.1 3.1 0 0 0 54 30.7H48.5A3.3 3.3 0 0 0 48.5 37.3H45A3.3 3.3 0 0 0 45 43.9H47A3 3 0 0 0 47 49.9H62C70 51.2 80 51 88 49.5Z" fill="#000" stroke-width="2.2"/>
-    <path d="M54 30.7H63M48.5 37.3H62M47 43.9H61M78 47.5C73 45.2 67 44.6 60.5 46.2" fill="none" stroke-width="1.8"/>
-    <path d="M71 30c2.5 1.2 5 1.2 7 .2M70.5 36c2.5 1.2 5 1.2 7 .2M71 42c2.5 1.2 5 1.2 7 .2" fill="none" stroke-width="1.5"/>
-    <rect x="86" y="19" width="14" height="34" rx="2" fill="#000" stroke="none"/>
-    <rect x="86" y="19" width="14" height="34" rx="2" fill="url(#dither)" stroke="none"/>
-    <rect x="86" y="19" width="14" height="34" rx="2" fill="none" stroke-width="2.2"/>
-  </g>
-  <!-- sparkles -->
-  <g stroke="#fff" stroke-linecap="round" fill="none">
-    <path d="M36 10v13M29.5 16.5h13" stroke-width="2.6"/>
-    <path d="M24 28v7M20.5 31.5h7" stroke-width="2"/>
-  </g>
+  <g stroke-linejoin="round" stroke-linecap="round"><rect x="12" y="18" width="84" height="84" rx="8" fill="#fff"/><rect x="8" y="14" width="84" height="84" rx="8" fill="#000"/><rect x="8" y="14" width="84" height="84" rx="8" fill="url(#dither)"/><rect x="8" y="14" width="84" height="84" rx="8" fill="none" stroke="#fff" stroke-width="3"/><rect x="19" y="25" width="62" height="46" rx="3" fill="#000" stroke="#fff" stroke-width="3"/><path d="M27 53h30M27 60h38" fill="none" stroke="#fff" stroke-width="1.8"/><rect x="28" y="82" width="44" height="5" rx="2" fill="#000" stroke="#fff" stroke-width="2"/><rect x="19" y="83" width="5" height="3" fill="#fff"/></g><g transform="translate(14 -4) scale(.75)"><g stroke-linecap="round" stroke-linejoin="round"><g transform="translate(2.5 2.5)"><line x1="36.5" y1="30" x2="36.5" y2="54" stroke="#fff" stroke-width="13"/><line x1="45.5" y1="30" x2="45.5" y2="59" stroke="#fff" stroke-width="13"/><line x1="54.5" y1="30" x2="54.5" y2="56" stroke="#fff" stroke-width="13"/><line x1="63.5" y1="30" x2="63.5" y2="48" stroke="#fff" stroke-width="13"/><line x1="34" y1="20" x2="23" y2="36" stroke="#fff" stroke-width="13"/><rect x="32" y="10" width="36" height="26" rx="8" fill="#fff" stroke="#fff" stroke-width="4"/></g><line x1="36.5" y1="30" x2="36.5" y2="54" stroke="#fff" stroke-width="13"/><line x1="45.5" y1="30" x2="45.5" y2="59" stroke="#fff" stroke-width="13"/><line x1="54.5" y1="30" x2="54.5" y2="56" stroke="#fff" stroke-width="13"/><line x1="63.5" y1="30" x2="63.5" y2="48" stroke="#fff" stroke-width="13"/><line x1="34" y1="20" x2="23" y2="36" stroke="#fff" stroke-width="13"/><rect x="32" y="10" width="36" height="26" rx="8" fill="#fff" stroke="#fff" stroke-width="4"/><line x1="36.5" y1="30" x2="36.5" y2="54" stroke="#000" stroke-width="9"/><line x1="45.5" y1="30" x2="45.5" y2="59" stroke="#000" stroke-width="9"/><line x1="54.5" y1="30" x2="54.5" y2="56" stroke="#000" stroke-width="9"/><line x1="63.5" y1="30" x2="63.5" y2="48" stroke="#000" stroke-width="9"/><line x1="34" y1="20" x2="23" y2="36" stroke="#000" stroke-width="9"/><rect x="32" y="10" width="36" height="26" rx="8" fill="#000" stroke="none" stroke-width="0"/><g stroke="#fff" stroke-width="1.6" fill="none"><path d="M41 36V51M50 36V55M59 36V51"/><path d="M34 45h5M43 48h5M52 46h5M61 40h4"/><path d="M27 25l5 3"/></g><rect x="30" y="1" width="40" height="11" fill="#000"/><rect x="30" y="1" width="40" height="11" fill="url(#dither)"/><rect x="30" y="1" width="40" height="11" fill="none" stroke="#fff" stroke-width="3"/></g></g>
 </svg>

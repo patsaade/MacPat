@@ -29,6 +29,7 @@ let package = Package(
         .target(name: "AnalyzeKit", dependencies: ["MacPatCore", "DesignSystem"]),
         .target(name: "StatusKit", dependencies: ["DesignSystem"]),
         .target(name: "OptimizeKit", dependencies: ["MacPatCore", "DesignSystem", "AnalyzeKit"]),
+        .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem", "MacPatCore"]),
         .testTarget(name: "StatusKitTests", dependencies: ["StatusKit"]),
         .testTarget(name: "OptimizeKitTests", dependencies: ["OptimizeKit", "MacPatCore"]),
         .testTarget(name: "UninstallKitTests", dependencies: ["UninstallKit", "MacPatCore", "PersistenceKit"]),

@@ -15,6 +15,10 @@ import UninstallKit
     CleanModule(), PersistenceModule(), UninstallModule(), AnalyzeModule(), StatusModule(), OptimizeModule(),
 ]
 
+extension Notification.Name {
+    static let selectModule = Notification.Name("io.github.patsaade.macpat.selectModule")
+}
+
 @main
 struct MacPatApp: App {
     @Environment(\.openWindow) private var openWindow
@@ -26,7 +30,26 @@ struct MacPatApp: App {
     }
 
     var body: some Scene {
-        Window("MacPat", id: "main") { RootView() }
+        Window("MacPat", id: "main") {
+            #if DEBUG
+                if Demo.live { LiveDemo() } else { RootView() }
+            #else
+                RootView()
+            #endif
+        }
+        .windowStyle(.hiddenTitleBar)
+        .windowBackgroundDragBehavior(.enabled)
+        .commands {
+            CommandGroup(after: .sidebar) {
+                ForEach(Array(modules.enumerated()), id: \.element.id) { index, module in
+                    Button(module.title) {
+                        NotificationCenter.default.post(name: .selectModule, object: module.id)
+                    }
+                    .keyboardShortcut(KeyEquivalent(Character("\(index + 1)")), modifiers: .command)
+                }
+            }
+        }
+        Settings { SettingsView() }
         MenuBarExtra {
             StatusMenuLines()
             Divider()
@@ -34,7 +57,7 @@ struct MacPatApp: App {
             Divider()
             Button("Quit MacPat") { NSApplication.shared.terminate(nil) }.keyboardShortcut("q")
         } label: {
-            Image(nsImage: PatMark.menuBarImage).accessibilityLabel("MacPat")
+            Image(nsImage: PatMark.menuBar(lift: PatSignal.shared.lift)).accessibilityLabel("MacPat")
         }
     }
 }

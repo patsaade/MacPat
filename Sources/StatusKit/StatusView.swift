@@ -56,7 +56,7 @@ struct StatusView: View {
 
     var body: some View {
         let s = model.snapshot
-        ScrollView {
+        RetroScroll {
             VStack(alignment: .leading, spacing: 14) {
                 Meter(title: "CPU", value: s.cpu, detail: "\(Int(s.cpu * 100))% busy across all cores")
                 Meter(

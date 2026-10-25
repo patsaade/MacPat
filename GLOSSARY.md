@@ -71,3 +71,15 @@ _Avoid_: Suspicious, malicious, threat
 **Clean**:
 Moving the chosen Items to the Trash.
 _Avoid_: Delete, wipe, purge
+
+**Grid**:
+The table layout for a Plan: one line per Step, ruled columns, sortable headers, folding groups.
+_Avoid_: List view, table view
+
+**Detail pane**:
+The panel beside the Grid that shows everything about one Step: full path, facts, command, and actions.
+_Avoid_: Inspector, sidebar
+
+**Motion**:
+The few durations and springs the app animates with. All of it stops under Reduce Motion.
+_Avoid_: Animation, transition

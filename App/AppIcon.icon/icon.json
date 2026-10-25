@@ -1,35 +1,31 @@
 {
-  "fill" : {
-    "solid" : "srgb:1.00000,1.00000,1.00000,1.00000"
+  "fill": {
+    "solid": "srgb:1.00000,1.00000,1.00000,1.00000"
   },
-  "groups" : [
+  "groups": [
     {
-      "layers" : [
+      "layers": [
         {
-          "image-name" : "pat-lines.svg",
-          "name" : "pat-lines"
+          "image-name": "hand.svg",
+          "name": "hand"
         },
         {
-          "image-name" : "hand.svg",
-          "name" : "hand"
-        },
-        {
-          "image-name" : "computer.svg",
-          "name" : "computer"
+          "image-name": "computer.svg",
+          "name": "computer"
         }
       ],
-      "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.3
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.3
       },
-      "translucency" : {
-        "enabled" : false,
-        "value" : 0
+      "translucency": {
+        "enabled": false,
+        "value": 0
       }
     }
   ],
-  "supported-platforms" : {
-    "squares" : [
+  "supported-platforms": {
+    "squares": [
       "macOS"
     ]
   }

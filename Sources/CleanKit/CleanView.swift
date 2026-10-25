@@ -75,7 +75,7 @@ struct CleanView: View {
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .success(let model):
-            PlanView(model: model, empty: "Nothing to clean.") { projectsBar(model) }
+            PlanView(model: model, layout: .grid, empty: "Nothing to clean.") { projectsBar(model) }
         }
     }
 

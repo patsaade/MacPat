@@ -8,18 +8,27 @@ import UniformTypeIdentifiers
 
 /// The preview breakdown every module shares: groups, steps, reasons, facts, and the
 /// exact command each step stands for. Run stays locked until a preview of this exact choice.
+public enum PlanLayout: Sendable {
+    /// Tall rows, one step per block.
+    case stacked
+    /// A table: one line per step, sortable columns, a detail pane.
+    case grid
+}
+
 public struct PlanView<Header: View>: View {
     @Bindable var model: PlanModel
+    let layout: PlanLayout
     let runLabel: String
     let empty: String
     let header: Header
     @State private var confirming = false
 
     public init(
-        model: PlanModel, runLabel: String = "Move to Trash…", empty: String = "Nothing found.",
+        model: PlanModel, layout: PlanLayout = .stacked, runLabel: String = "Move to Trash…", empty: String = "Nothing found.",
         @ViewBuilder header: () -> Header = { EmptyView() }
     ) {
         self.model = model
+        self.layout = layout
         self.runLabel = runLabel
         self.empty = empty
         self.header = header()
@@ -36,18 +45,27 @@ public struct PlanView<Header: View>: View {
         .task { if !model.scanned { await model.scan() } }
     }
 
-    @ViewBuilder private var banners: some View {
+    private var banners: some View {
+        VStack(spacing: 0) { bannerItems }
+            .motion(Motion.settle, value: model.outcome)
+            .motion(Motion.settle, value: model.adminCount)
+    }
+
+    @ViewBuilder private var bannerItems: some View {
         if let out = model.outcome {
             if let refused = out.refused {
-                RetroBanner(.warning, refused)
+                RetroBanner(.warning, refused).transition(.opacity.combined(with: .move(edge: .top)))
             } else if out.dryRun {
-                RetroBanner(.dryRun, "Nothing changed. \(summary(out, verb: "Would do"))")
+                RetroBanner(.dryRun, "Nothing changed. \(summary(out, verb: "Would do"))").transition(
+                    .opacity.combined(with: .move(edge: .top)))
             } else {
                 RetroBanner(.info, "\(summary(out, verb: "Done")) Look in the Trash to put anything back.")
+                    .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
         if model.adminCount > 0 {
             RetroBanner(.admin, "\(model.adminCount) chosen steps need admin. macOS will ask for your password.")
+                .transition(.opacity.combined(with: .move(edge: .top)))
         }
     }
 
@@ -56,11 +74,32 @@ public struct PlanView<Header: View>: View {
         return "\(verb): \(Count.steps(out.count))\(out.bytes > 0 ? ", " + ByteFormat.string(out.bytes) : "").\(failed)"
     }
 
-    private var list: some View {
-        ScrollView {
+    @ViewBuilder private var list: some View {
+        switch layout {
+        case .grid: PlanGrid(model: model, empty: empty).overlay { scanning }
+        case .stacked: stackedList.overlay { scanning }
+        }
+    }
+
+    @ViewBuilder private var scanning: some View {
+        if model.scanning {
+            HStack(spacing: 10) {
+                PatMascot(.scanning).frame(width: 40, height: 40)
+                Text("Scanning…")
+            }
+            .padding(10).background(Retro.paper).border(Retro.ink, width: Retro.line)
+        }
+    }
+
+    private var stackedList: some View {
+        RetroScroll {
             VStack(spacing: 0) {
                 if model.scanned && model.steps.isEmpty {
-                    Text(empty).padding(24).frame(maxWidth: .infinity)
+                    VStack(spacing: 8) {
+                        PatMascot(.idle).frame(width: 72, height: 72)
+                        Text(empty)
+                    }
+                    .padding(24).frame(maxWidth: .infinity)
                 }
                 let largest = model.groups.map { $0.steps.reduce(Int64(0)) { $0 + $1.bytes } }.max() ?? 0
                 ForEach(model.groups, id: \.name) { group in
@@ -69,15 +108,13 @@ public struct PlanView<Header: View>: View {
                 }
             }
         }
-        .overlay {
-            if model.scanning {
-                Text("Scanning…").padding(8).background(Retro.paper).border(Retro.ink, width: Retro.line)
-            }
-        }
     }
 
     private var footer: some View {
         HStack(spacing: 8) {
+            if let out = model.outcome, !out.dryRun, out.refused == nil, out.failures.isEmpty {
+                PatMascot(.done).frame(width: 28, height: 28)
+            }
             Text(status).lineLimit(2).layoutPriority(-1)
             Spacer(minLength: 8)
             Toggle("Show commands", isOn: $model.showCommands)
@@ -214,16 +251,11 @@ private struct StepRow: View {
         .padding([.trailing, .vertical], 10)
         .contextMenu {
             if let url = step.url {
-                Button("Reveal in Finder") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
+                Button("Reveal in Finder") { StepActions.reveal(url) }
                 Button("Never Touch This") { model.neverTouch(step) }
             }
-            if let file = step.facts.first(where: { $0.label == "File" }) {
-                Button("Open File") { NSWorkspace.shared.open(URL(filePath: file.value)) }
-            }
-            Button("Copy Command") {
-                NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString(step.display, forType: .string)
-            }
+            if step.facts.contains(where: { $0.label == "File" }) { Button("Open File") { StepActions.openFile(step) } }
+            Button("Copy Command") { StepActions.copyCommand(step) }
         }
     }
 }

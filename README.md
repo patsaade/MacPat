@@ -54,6 +54,8 @@ You need macOS 26 or later, an Apple silicon Mac, and Xcode 26 or later. See [bu
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/media/uninstall-flow-dark.gif"><img src="docs/media/uninstall-flow-light.gif" alt="Uninstall: an app and its leftovers, each with a reason, then the preview."></picture>
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/media/clean-pane-dark.png"><img src="docs/media/clean-pane-light.png" alt="Clean as a grid, with the detail pane open on one step."></picture>
+
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/media/analyze-dark.png"><img src="docs/media/analyze-light.png" alt="Analyze: disk use, purgeable space, and folder sizes."></picture>
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/media/status-dark.png"><img src="docs/media/status-light.png" alt="Status: CPU, memory, disk, battery, and top processes."></picture>
@@ -65,7 +67,7 @@ The images are the real views with made-up data. `scripts/snapshots.sh` makes th
 
 ## Docs
 
-[Tutorials, how-tos, reference, and explanation](docs/README.md). Also: [privacy](PRIVACY.md), [security](SECURITY.md), [accessibility](ACCESSIBILITY.md), [colophon](COLOPHON.md), [contributing](CONTRIBUTING.md).
+[Tutorials, how-tos, reference, and explanation](docs/README.md). Also: [style guide](docs/STYLE.md), [privacy](PRIVACY.md), [security](SECURITY.md), [accessibility](ACCESSIBILITY.md), [colophon](COLOPHON.md), [contributing](CONTRIBUTING.md).
 
 ## License
 

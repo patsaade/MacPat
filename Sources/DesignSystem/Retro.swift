@@ -125,6 +125,7 @@ public struct RetroButtonStyle: ButtonStyle {
                 .overlay(shape.strokeBorder(Retro.ink, style: StrokeStyle(lineWidth: Retro.line, dash: enabled ? [] : [4, 3])))
                 .background { if enabled && !pressed { shape.fill(Retro.ink).offset(x: 3, y: 3) } }
                 .offset(x: pressed ? 3 : 0, y: pressed ? 3 : 0)
+                .motion(pressed ? Motion.quick : Motion.release, value: pressed)
                 .padding([.trailing, .bottom], 3)
                 .opacity(enabled ? 1 : 0.6)
                 .modifier(FocusRing(radius: 6))
@@ -145,6 +146,10 @@ public struct RetroToggleStyle: ToggleStyle {
                 Box(isOn: configuration.isOn)
                 configuration.label
             }
+            // A 24 pt target around the 16 pt box, without moving anything.
+            .padding(4)
+            .contentShape(Rectangle())
+            .padding(-4)
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(.isToggle)

@@ -80,7 +80,7 @@ struct UninstallView: View {
             VStack(spacing: 0) {
                 TextField("Filter apps", text: $filter).textFieldStyle(.plain).padding(8).border(Retro.ink, width: 1).padding(8)
                 RetroRule(thickness: 1)
-                ScrollView {
+                RetroScroll {
                     VStack(alignment: .leading, spacing: 0) {
                         row("Orphaned files", selected: orphans) { pick(nil) }
                         RetroRule(thickness: 1)

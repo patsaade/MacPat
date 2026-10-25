@@ -14,13 +14,18 @@ The goal is every control usable with VoiceOver, the keyboard alone, and your sy
 - Increase Contrast removes the dotted desktop and turns every dither solid.
 - Disabled controls get a dashed outline, not only dimming. Selected tabs and segments are inverted and marked selected.
 - Custom buttons and checkboxes are real controls, with a dashed focus ring for keyboard users.
-- The app has no animation. The README banner's pat stops under Reduce Motion.
+- Motion is short and never blocks a click. Reduce Motion makes every change instant, turns slides into fades, and keeps the hand and the chosen-row outline still. The README banner's pat stops too.
+- The Clean grid works from the keyboard: arrows move the row, Space toggles it, Return opens the detail pane, Escape closes it. Column headers say their sort direction.
+- The drawn scrollbar sits on the real scroll view, so trackpad, paging keys, and VoiceOver scrolling work as usual.
+- Click targets are at least 24 pt, even where the drawing is smaller.
+- Command-1 to 6 switch modules. Command-comma opens Settings.
 
 ## Known gaps
 
 - I have not yet done a full VoiceOver pass on a release build.
 - The custom controls have not been tested with Full Keyboard Access.
 - Long plans are one scroll view. Rotor navigation by group isn't there yet.
+- The grid's row and column labels have not been checked with VoiceOver on a release build.
 
 ## Report a barrier
 

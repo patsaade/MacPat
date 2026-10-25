@@ -52,7 +52,9 @@
             ]
         }
 
-        public static func view(expanded: [String] = ["Caches and logs: App caches"], preview: Bool = true, commands: Bool = false) async
+        public static func view(
+            expanded: [String] = ["Caches and logs: App caches"], preview: Bool = true, commands: Bool = false, pane: Bool = false
+        ) async
             -> AnyView
         {
             let model = await DemoKit.model(
@@ -60,6 +62,9 @@
                 zones: ["Library/Caches", "Library/Logs", "Library/Developer", "Downloads", "Library/Application Support/MobileSync"],
                 expanded: expanded, preview: preview)
             model.showCommands = commands
+            if pane, let step = model.visibleSteps.dropFirst().first {
+                model.select(step, openPane: true)
+            }
             return AnyView(CleanView(demo: model))
         }
     }
