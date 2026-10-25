@@ -5,7 +5,7 @@
   </picture>
 </p>
 
-[![CI](https://github.com/patsaade/macpat/actions/workflows/ci.yml/badge.svg)](https://github.com/patsaade/macpat/actions/workflows/ci.yml)
+[![CI](https://github.com/patsaade/MacPat/actions/workflows/ci.yml/badge.svg)](https://github.com/patsaade/MacPat/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-black.svg)](LICENSE)
 
 MacPat is a small, open-source Mac cleaner for Apple silicon. Before it touches anything, it shows you each item it would take, why, and the exact command behind it.
@@ -43,7 +43,7 @@ MacPat moves files to the Trash, runs a few system commands, and turns off thing
 There is no download yet. The app isn't signed with a developer certificate or notarized, so I won't hand out a binary that macOS will fight you over. Build it yourself:
 
 ```sh
-git clone https://github.com/patsaade/macpat.git
+git clone https://github.com/patsaade/MacPat.git
 cd macpat
 brew install xcodegen
 xcodegen generate
