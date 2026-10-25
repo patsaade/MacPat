@@ -1,0 +1,12 @@
+{
+  "id": "maven-repo",
+  "group": "Package caches",
+  "name": "Maven repository",
+  "summary": "Every artifact Maven downloaded.",
+  "risk": "review",
+  "paths": [
+    "~/.m2/repository"
+  ],
+  "reason": "Anything you installed locally with mvn install lives here too and can't be downloaded.",
+  "regenerates": "Downloaded again on next build."
+}

@@ -1,0 +1,12 @@
+{
+  "id": "gradle-cache",
+  "group": "Package caches",
+  "name": "Gradle caches",
+  "summary": "Dependencies and build caches Gradle keeps.",
+  "risk": "review",
+  "paths": [
+    "~/.gradle/caches"
+  ],
+  "reason": "Large and rebuildable. Offline builds will fail until it downloads again.",
+  "regenerates": "Downloaded again on next build."
+}

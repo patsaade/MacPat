@@ -1,0 +1,12 @@
+{
+  "id": "chrome-cache",
+  "group": "Browsers",
+  "name": "Chrome cache",
+  "summary": "Web page cache. Not history, cookies, or passwords.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Caches/Google/Chrome"
+  ],
+  "reason": "Only the cache folder. Chrome's profile lives elsewhere and is untouched.",
+  "regenerates": "Pages load from the network until it refills. Quit Chrome first."
+}

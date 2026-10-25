@@ -1,0 +1,12 @@
+{
+  "id": "yarn-cache",
+  "group": "Package caches",
+  "name": "Yarn cache",
+  "summary": "Packages Yarn downloaded.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Caches/Yarn"
+  ],
+  "reason": "A global download cache.",
+  "regenerates": "Downloaded again on next install."
+}

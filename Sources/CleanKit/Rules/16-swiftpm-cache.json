@@ -1,0 +1,12 @@
+{
+  "id": "swiftpm-cache",
+  "group": "Package caches",
+  "name": "SwiftPM cache",
+  "summary": "Package checkouts SwiftPM shares across projects.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Caches/org.swift.swiftpm"
+  ],
+  "reason": "Each project resolves its own copy.",
+  "regenerates": "Cloned again on next resolve."
+}

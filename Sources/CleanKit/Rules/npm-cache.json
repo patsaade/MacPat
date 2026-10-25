@@ -1,7 +1,0 @@
-{
-  "id": "npm-cache",
-  "name": "npm cache",
-  "summary": "Downloaded packages. npm fetches them again.",
-  "risk": "safe",
-  "paths": ["~/.npm/_cacache"]
-}

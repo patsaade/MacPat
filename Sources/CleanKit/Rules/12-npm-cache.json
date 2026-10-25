@@ -1,0 +1,12 @@
+{
+  "id": "npm-cache",
+  "group": "Package caches",
+  "name": "npm cache",
+  "summary": "Packages npm downloaded.",
+  "risk": "safe",
+  "paths": [
+    "~/.npm/_cacache"
+  ],
+  "reason": "A content cache. Projects keep their own node_modules.",
+  "regenerates": "Downloaded again on next install."
+}

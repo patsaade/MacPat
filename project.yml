@@ -21,10 +21,25 @@ targets:
   MacPat:
     type: application
     platform: macOS
-    sources: [App]
+    sources:
+      - path: App
+        excludes: [AppIcon.icon]
+      - path: App/AppIcon.icon
+        type: file
+        buildPhase: resources
     dependencies:
       - package: MacPat
         product: CleanKit
+      - package: MacPat
+        product: PersistenceKit
+      - package: MacPat
+        product: UninstallKit
+      - package: MacPat
+        product: AnalyzeKit
+      - package: MacPat
+        product: StatusKit
+      - package: MacPat
+        product: OptimizeKit
       - package: MacPat
         product: DesignSystem
     settings:

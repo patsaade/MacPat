@@ -1,0 +1,12 @@
+{
+  "id": "safari-cache",
+  "group": "Browsers",
+  "name": "Safari cache",
+  "summary": "Web page cache. Needs Full Disk Access to see.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Caches/com.apple.Safari"
+  ],
+  "reason": "Only the cache. History, cookies, and passwords live elsewhere.",
+  "regenerates": "Refills as you browse. Quit Safari first."
+}

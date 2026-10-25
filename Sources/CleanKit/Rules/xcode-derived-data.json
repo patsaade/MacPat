@@ -1,7 +1,0 @@
-{
-  "id": "xcode-derived-data",
-  "name": "Xcode build files",
-  "summary": "Build output. Xcode makes it again, slowly.",
-  "risk": "safe",
-  "paths": ["~/Library/Developer/Xcode/DerivedData"]
-}

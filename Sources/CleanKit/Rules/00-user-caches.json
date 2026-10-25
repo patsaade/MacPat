@@ -1,0 +1,25 @@
+{
+  "id": "user-caches",
+  "group": "Caches and logs",
+  "name": "App caches",
+  "summary": "Files apps rebuild when they need them. Quit apps first.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Caches"
+  ],
+  "reason": "Apps keep these to start faster. They rebuild them on demand.",
+  "regenerates": "Apps rebuild them as they run. First launch may be slower.",
+  "exclude": [
+    "com.apple.*",
+    "Homebrew",
+    "pip",
+    "go-build",
+    "Yarn",
+    "CocoaPods",
+    "Google",
+    "Firefox",
+    "org.swift.swiftpm",
+    "CloudKit",
+    "FamilyCircle"
+  ]
+}

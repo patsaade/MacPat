@@ -1,0 +1,12 @@
+{
+  "id": "homebrew",
+  "group": "Package caches",
+  "name": "Homebrew downloads",
+  "summary": "Bottles and source tarballs Homebrew already installed.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Caches/Homebrew"
+  ],
+  "reason": "Kept so a reinstall skips the download.",
+  "regenerates": "Downloaded again if you reinstall."
+}

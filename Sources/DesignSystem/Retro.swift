@@ -83,7 +83,7 @@ public struct RetroWindow<Content: View>: View {
         }
         .background(Retro.paper)
         .overlay(Rectangle().strokeBorder(Retro.ink, lineWidth: Retro.line))
-        .background(alignment: .topLeading) { Rectangle().fill(Retro.ink).offset(x: 4, y: 4) }
+        .background(alignment: .topLeading) { Rectangle().fill(Retro.ink).offset(x: 6, y: 6) }
     }
 }
 
@@ -114,16 +114,20 @@ public struct RetroButtonStyle: ButtonStyle {
         @Environment(\.isEnabled) private var enabled
 
         var body: some View {
-            let shape = RoundedRectangle(cornerRadius: 8)
+            let shape = RoundedRectangle(cornerRadius: 6)
+            let pressed = configuration.isPressed
             configuration.label
                 .font(Retro.font)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 4)
-                .foregroundStyle(configuration.isPressed ? Retro.paper : Retro.ink)
-                .background(configuration.isPressed ? Retro.ink : Retro.paper, in: shape)
+                .foregroundStyle(pressed ? Retro.paper : Retro.ink)
+                .background(pressed ? Retro.ink : Retro.paper, in: shape)
                 .overlay(shape.strokeBorder(Retro.ink, style: StrokeStyle(lineWidth: Retro.line, dash: enabled ? [] : [4, 3])))
+                .background { if enabled && !pressed { shape.fill(Retro.ink).offset(x: 3, y: 3) } }
+                .offset(x: pressed ? 3 : 0, y: pressed ? 3 : 0)
+                .padding([.trailing, .bottom], 3)
                 .opacity(enabled ? 1 : 0.6)
-                .modifier(FocusRing(radius: 8))
+                .modifier(FocusRing(radius: 6))
                 .contentShape(shape)
         }
     }

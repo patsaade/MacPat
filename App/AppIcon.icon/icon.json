@@ -1,0 +1,36 @@
+{
+  "fill" : {
+    "solid" : "srgb:1.00000,1.00000,1.00000,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "image-name" : "pat-lines.svg",
+          "name" : "pat-lines"
+        },
+        {
+          "image-name" : "hand.svg",
+          "name" : "hand"
+        },
+        {
+          "image-name" : "computer.svg",
+          "name" : "computer"
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.3
+      },
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : [
+      "macOS"
+    ]
+  }
+}

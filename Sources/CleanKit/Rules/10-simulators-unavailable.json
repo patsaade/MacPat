@@ -1,0 +1,11 @@
+{
+  "id": "simulators-unavailable",
+  "group": "Developer",
+  "name": "Unavailable simulators",
+  "summary": "Simulators whose runtime is gone.",
+  "risk": "safe",
+  "paths": [],
+  "command": "simctl-delete-unavailable",
+  "reason": "They can't boot anyway. simctl deletes them and their data for good, not to the Trash.",
+  "regenerates": "Not needed. Make new ones in Xcode."
+}

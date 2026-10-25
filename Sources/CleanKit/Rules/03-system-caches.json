@@ -1,0 +1,13 @@
+{
+  "id": "system-caches",
+  "group": "Caches and logs",
+  "name": "System-wide caches",
+  "summary": "Caches shared by all users. Needs admin.",
+  "risk": "review",
+  "paths": [
+    "/Library/Caches"
+  ],
+  "scope": "system",
+  "reason": "Third-party caches in /Library. Apple's own are refused.",
+  "regenerates": "Their apps rebuild them."
+}

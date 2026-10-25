@@ -1,0 +1,12 @@
+{
+  "id": "firefox-cache",
+  "group": "Browsers",
+  "name": "Firefox cache",
+  "summary": "Web page cache. Not history, cookies, or passwords.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Caches/Firefox/Profiles"
+  ],
+  "reason": "Only the cache folder. The profile lives elsewhere and is untouched.",
+  "regenerates": "Refills as you browse. Quit Firefox first."
+}

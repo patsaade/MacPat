@@ -1,0 +1,13 @@
+{
+  "id": "ios-backups",
+  "group": "Backups",
+  "name": "iPhone and iPad backups",
+  "summary": "Local device backups made by Finder.",
+  "risk": "review",
+  "paths": [
+    "~/Library/Application Support/MobileSync/Backup"
+  ],
+  "reason": "This may be your only backup of that device. Check the name and date.",
+  "regenerates": "Can't be rebuilt. Only a new backup replaces it.",
+  "details": "device-backup"
+}

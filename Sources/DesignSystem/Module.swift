@@ -3,7 +3,7 @@
 
 import SwiftUI
 
-/// One feature of the app. The sidebar lists every module the app registers.
+/// One feature of the app. The menu bar lists every module the app registers.
 @MainActor
 public protocol MacPatModule {
     var id: String { get }

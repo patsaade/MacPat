@@ -1,0 +1,12 @@
+{
+  "id": "bun-cache",
+  "group": "Package caches",
+  "name": "Bun cache",
+  "summary": "Packages Bun downloaded.",
+  "risk": "safe",
+  "paths": [
+    "~/.bun/install/cache"
+  ],
+  "reason": "A global download cache.",
+  "regenerates": "Downloaded again on next install."
+}

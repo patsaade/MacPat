@@ -1,0 +1,12 @@
+{
+  "id": "pip-cache",
+  "group": "Package caches",
+  "name": "pip cache",
+  "summary": "Wheels and downloads pip kept.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Caches/pip"
+  ],
+  "reason": "A download cache. Installed packages are untouched.",
+  "regenerates": "Downloaded again on next install."
+}

@@ -1,0 +1,12 @@
+{
+  "id": "simulator-caches",
+  "group": "Developer",
+  "name": "Simulator caches",
+  "summary": "Dyld and runtime caches for simulators.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Developer/CoreSimulator/Caches"
+  ],
+  "reason": "Built from the simulator runtimes.",
+  "regenerates": "Rebuilt on next simulator boot."
+}

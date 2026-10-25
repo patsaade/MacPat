@@ -8,13 +8,18 @@ A rule is one JSON file. No Swift needed.
    ```json
    {
      "id": "my-cache",
+     "group": "Package caches",
      "name": "My cache",
      "summary": "What it is, in one line.",
      "risk": "safe",
-     "paths": ["~/Library/Caches/Example"]
+     "paths": ["~/Library/Caches/Example"],
+     "reason": "Why removing it is fine.",
+     "regenerates": "What it costs to get back."
    }
    ```
 
 3. Run `swift test`. The `bundledRulesAreValid` test loads every rule.
+
+All fields are in the [rule format](../reference/rule-format.md). The reason and the cost to get it back are what people read in the preview, so write them plainly.
 
 The paths are folders. MacPat cleans their children, never the folder itself.

@@ -1,0 +1,12 @@
+{
+  "id": "xcode-derived-data",
+  "group": "Developer",
+  "name": "Xcode build files",
+  "summary": "Intermediate builds. Xcode rebuilds them.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Developer/Xcode/DerivedData"
+  ],
+  "reason": "Indexes and build products for each project.",
+  "regenerates": "The next build is a full build."
+}

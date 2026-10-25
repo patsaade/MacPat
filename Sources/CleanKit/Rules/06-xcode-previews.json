@@ -1,0 +1,12 @@
+{
+  "id": "xcode-previews",
+  "group": "Developer",
+  "name": "Xcode preview data",
+  "summary": "SwiftUI preview builds.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Developer/Xcode/UserData/Previews"
+  ],
+  "reason": "Built only to show canvas previews.",
+  "regenerates": "Rebuilt when you open a preview."
+}

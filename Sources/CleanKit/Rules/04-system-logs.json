@@ -1,0 +1,16 @@
+{
+  "id": "system-logs",
+  "group": "Caches and logs",
+  "name": "System-wide logs",
+  "summary": "Logs third-party tools keep in /Library/Logs. Needs admin.",
+  "risk": "review",
+  "paths": [
+    "/Library/Logs"
+  ],
+  "scope": "system",
+  "reason": "Installer and helper logs. Apple's own are refused.",
+  "regenerates": "Tools start new logs.",
+  "exclude": [
+    "DiagnosticReports"
+  ]
+}

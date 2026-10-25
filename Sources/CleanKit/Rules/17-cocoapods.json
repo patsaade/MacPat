@@ -1,0 +1,12 @@
+{
+  "id": "cocoapods",
+  "group": "Package caches",
+  "name": "CocoaPods cache",
+  "summary": "Pod downloads.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Caches/CocoaPods"
+  ],
+  "reason": "A download cache. Pods folders in projects are untouched.",
+  "regenerates": "Downloaded again on next pod install."
+}

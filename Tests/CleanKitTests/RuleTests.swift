@@ -25,7 +25,8 @@ import Testing
     @Test func bundledRulesAreValid() throws {
         let real = FileManager.default.homeDirectoryForCurrentUser
         let targets = try RuleLoader.load(from: RuleLoader.bundledDirectory, home: real, zones: Zones(home: real))
-        #expect(targets.count >= 4)
+        #expect(targets.count >= 25)
+        #expect(Set(targets.map(\.group)).count >= 5)
     }
 
     @Test func acceptsGoodRule() throws {
@@ -43,6 +44,28 @@ import Testing
     @Test(arguments: ["", "Bad Id", "UPPER", "a/b", "../x"])
     func rejectsBadIds(id: String) {
         #expect(throws: RuleError.self) { try load(rule(id: id)) }
+    }
+
+    @Test(arguments: [
+        #"{"id":"x","name":"N","summary":"S","risk":"locked","paths":["~/Library/Caches"]}"#,
+        #"{"id":"x","name":"N","summary":"S","risk":"safe","paths":["~/Library/Caches"],"scope":"root"}"#,
+        #"{"id":"x","name":"N","summary":"S","risk":"safe","paths":["/System/Library"],"scope":"system"}"#,
+        #"{"id":"x","name":"N","summary":"S","risk":"safe","paths":["/Library"],"scope":"system"}"#,
+        #"{"id":"x","name":"N","summary":"S","risk":"safe","paths":[],"command":"rm-rf"}"#,
+        #"{"id":"x","name":"N","summary":"S","risk":"safe","paths":["~/Library/Caches"],"match":["../*"]}"#,
+        #"{"id":"x","name":"N","summary":"S","risk":"safe","paths":["~/Library/Caches"],"minAgeDays":-1}"#,
+        #"{"id":"x","name":"N","summary":"S","risk":"review","paths":["~/Library/Caches"],"preselect":true}"#,
+        #"{"id":"x","name":"N","summary":"S","risk":"safe","paths":["~/Library/Caches"],"details":"anything"}"#,
+    ])
+    func rejectsBadV2Fields(json: String) {
+        #expect(throws: RuleError.self) { try load(json) }
+    }
+
+    @Test func acceptsSystemAndCommandRules() throws {
+        let system = try load(#"{"id":"x","name":"N","summary":"S","risk":"review","paths":["/Library/Caches"],"scope":"system"}"#)
+        #expect(system.first?.system == true)
+        let command = try load(#"{"id":"x","name":"N","summary":"S","risk":"safe","paths":[],"command":"simctl-delete-unavailable"}"#)
+        #expect(command.first?.command == .deleteUnavailableSimulators())
     }
 
     @Test func rejectsGarbage() {

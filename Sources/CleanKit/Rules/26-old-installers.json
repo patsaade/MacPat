@@ -1,0 +1,21 @@
+{
+  "id": "old-installers",
+  "group": "Mail and downloads",
+  "name": "Old installers",
+  "summary": "Disk images and installer packages in Downloads, older than a week.",
+  "risk": "review",
+  "paths": [
+    "~/Downloads"
+  ],
+  "match": [
+    "*.dmg",
+    "*.pkg",
+    "*.iso",
+    "*.xip",
+    "*.mpkg"
+  ],
+  "minAgeDays": 7,
+  "reason": "Usually installed already. Check the source before you let one go.",
+  "regenerates": "Download it again from where it came from.",
+  "details": "download-source"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "mail-downloads",
+  "group": "Mail and downloads",
+  "name": "Mail attachment copies",
+  "summary": "Copies Mail made when you opened attachments.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Containers/com.apple.mail/Data/Library/Mail Downloads"
+  ],
+  "reason": "The originals stay in the messages.",
+  "regenerates": "Made again when you open the attachment."
+}

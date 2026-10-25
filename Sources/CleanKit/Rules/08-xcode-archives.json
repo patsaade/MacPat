@@ -1,0 +1,12 @@
+{
+  "id": "xcode-archives",
+  "group": "Developer",
+  "name": "Xcode archives",
+  "summary": "App builds you archived, with their dSYMs.",
+  "risk": "review",
+  "paths": [
+    "~/Library/Developer/Xcode/Archives"
+  ],
+  "reason": "Keep any archive you shipped. Its dSYM is how you read crash logs from users.",
+  "regenerates": "Can't be rebuilt exactly."
+}

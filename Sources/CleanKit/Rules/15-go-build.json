@@ -1,0 +1,12 @@
+{
+  "id": "go-build",
+  "group": "Package caches",
+  "name": "Go build cache",
+  "summary": "Compiled Go packages.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Caches/go-build"
+  ],
+  "reason": "The go tool's build cache.",
+  "regenerates": "The next build compiles from scratch."
+}

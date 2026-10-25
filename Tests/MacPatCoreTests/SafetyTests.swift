@@ -91,6 +91,14 @@ struct Sandbox {
         #expect(throws: SafetyError.outsideZones) { try zones.validate(s.outside.appending(path: "x")) }
     }
 
+    @Test func dropsZoneRootThatIsASymlinkInsideHome() throws {
+        let s = try Sandbox(); defer { s.cleanup() }
+        try FileManager.default.createSymbolicLink(
+            at: s.home.appending(path: "Movies"), withDestinationURL: s.home.appending(path: "Library"))
+        let zones = Zones(home: s.home, relativePaths: ["Movies", "Library/Caches"])
+        #expect(zones.roots.map(\.path) == [s.caches.path])
+    }
+
     /// Throws path pieces at the validator. Anything it accepts must sit under a zone root.
     @Test func neverAcceptsAnythingOutsideZones() throws {
         let s = try Sandbox(); defer { s.cleanup() }
@@ -111,29 +119,62 @@ struct Sandbox {
     }
 }
 
-@Suite struct CleanerTests {
+@Suite struct ExecutorTests {
+    func plan(_ items: [URL], bytes: Int64 = 10) -> Plan {
+        Plan(items.map { Step(group: "g", title: $0.lastPathComponent, bytes: bytes, risk: .safe, reason: "", action: .trash($0)) })
+    }
+
     @Test func dryRunDisposesNothing() throws {
         let s = try Sandbox(); defer { s.cleanup() }
-        let item = Item(url: try s.file("a", bytes: 100), bytes: 100, targetID: "t")
-        let out = Cleaner(zones: s.zones).run([item], dryRun: true) { _ in Issue.record("disposed") }
+        let url = try s.file("a", bytes: 100)
+        let out = Executor(zones: s.zones, dispose: { _ in Issue.record("disposed") }).run(
+            plan([url], bytes: 100), previewed: nil, dryRun: true)
         #expect(out.count == 1 && out.bytes == 100 && out.failures.isEmpty && out.dryRun)
-        #expect(FileManager.default.fileExists(atPath: item.url.path))
+        #expect(FileManager.default.fileExists(atPath: url.path))
     }
 
     @Test func realRunDisposesEachItemOnce() throws {
         let s = try Sandbox(); defer { s.cleanup() }
-        let item = Item(url: try s.file("a"), bytes: 10, targetID: "t")
+        let url = try s.file("a")
         let log = Log()
-        let out = Cleaner(zones: s.zones).run([item, item], dryRun: false) { log.add($0) }
+        let p = plan([url, url])
+        let out = Executor(zones: s.zones, dispose: { log.add($0) }).run(p, previewed: p.fingerprint, dryRun: false)
         #expect(out.count == 1)
-        #expect(log.urls == [item.url])
+        #expect(log.urls == [url])
+    }
+
+    @Test func refusesWithoutMatchingPreview() throws {
+        let s = try Sandbox(); defer { s.cleanup() }
+        let p = plan([try s.file("a")])
+        let ex = Executor(zones: s.zones, dispose: { _ in Issue.record("disposed") })
+        #expect(ex.run(p, previewed: nil, dryRun: false).refused != nil)
+        #expect(ex.run(p, previewed: "stale", dryRun: false).refused != nil)
+    }
+
+    @Test func fingerprintChangesWhenFileIsSwapped() throws {
+        let s = try Sandbox(); defer { s.cleanup() }
+        let url = try s.file("a")
+        let before = plan([url]).fingerprint
+        try Data(count: 99).write(to: url)
+        #expect(plan([url]).fingerprint == before, "new content keeps the same file")
+        try FileManager.default.removeItem(at: url)
+        try FileManager.default.createSymbolicLink(at: url, withDestinationURL: s.outside)
+        #expect(plan([url]).fingerprint != before, "a swapped link must not match")
     }
 
     @Test func refusesItemsOutsideZones() throws {
         let s = try Sandbox(); defer { s.cleanup() }
-        let stray = Item(url: try s.file("secret", in: s.outside), bytes: 10, targetID: "t")
-        let out = Cleaner(zones: s.zones).run([stray], dryRun: false) { _ in Issue.record("disposed") }
+        let p = plan([try s.file("secret", in: s.outside)])
+        let out = Executor(zones: s.zones, dispose: { _ in Issue.record("disposed") }).run(p, previewed: p.fingerprint, dryRun: false)
         #expect(out.count == 0 && out.failures.count == 1)
+    }
+
+    @Test func lockedStepsNeverRun() throws {
+        let s = try Sandbox(); defer { s.cleanup() }
+        let url = try s.file("a")
+        let p = Plan([Step(group: "g", title: "a", risk: .locked, reason: "", action: .trash(url))])
+        let out = Executor(zones: s.zones, dispose: { _ in Issue.record("disposed") }).run(p, previewed: p.fingerprint, dryRun: false)
+        #expect(out.count == 0 && out.failures.first?.reason == SafetyError.locked.description)
     }
 
     @Test func linkIsDisposedNotItsTarget() throws {
@@ -142,17 +183,139 @@ struct Sandbox {
         let link = s.caches.appending(path: "link")
         try FileManager.default.createSymbolicLink(at: link, withDestinationURL: target)
         let log = Log()
-        _ = Cleaner(zones: s.zones).run([Item(url: link, bytes: 0, targetID: "t")], dryRun: false) { log.add($0) }
+        let p = plan([link])
+        _ = Executor(zones: s.zones, dispose: { log.add($0) }).run(p, previewed: p.fingerprint, dryRun: false)
         #expect(log.urls == [link])
     }
 
     @Test func failureDoesNotStopTheRun() throws {
         let s = try Sandbox(); defer { s.cleanup() }
-        let a = Item(url: try s.file("a"), bytes: 1, targetID: "t")
-        let b = Item(url: try s.file("b"), bytes: 2, targetID: "t")
+        let a = try s.file("a")
+        let b = try s.file("b")
         struct Boom: Error {}
-        let out = Cleaner(zones: s.zones).run([a, b], dryRun: false) { if $0 == a.url { throw Boom() } }
+        let p = Plan([
+            Step(group: "g", title: "a", bytes: 1, risk: .safe, reason: "", action: .trash(a)),
+            Step(group: "g", title: "b", bytes: 2, risk: .safe, reason: "", action: .trash(b)),
+        ])
+        let out = Executor(zones: s.zones, dispose: { if $0 == a { throw Boom() } }).run(p, previewed: p.fingerprint, dryRun: false)
         #expect(out.count == 1 && out.bytes == 2 && out.failures.count == 1)
+    }
+
+    @Test func adminTrashGoesThroughSystemZonesAndMv() throws {
+        let s = try Sandbox(); defer { s.cleanup() }
+        let ran = Commands()
+        let runner = Runner {
+            ran.add($0); return ""
+        }
+        let ok = URL(filePath: "/Library/LaunchDaemons/com.example.helper.plist")
+        let bad = URL(filePath: "/System/Library/LaunchDaemons/com.example.plist")
+        let apple = URL(filePath: "/Library/LaunchDaemons/com.apple.thing.plist")
+        let p = Plan([ok, bad, apple].map { Step(group: "g", title: "x", risk: .review, reason: "", action: .adminTrash($0)) })
+        let out = Executor(zones: s.zones, home: s.home, runner: runner).run(p, previewed: p.fingerprint, dryRun: false)
+        #expect(out.count == 1 && out.failures.count == 2)
+        let mv = try #require(ran.all.first)
+        #expect(mv.tool == .mv && mv.admin && mv.args[1] == ok.path && mv.args[2].hasPrefix(s.home.appending(path: ".Trash").path))
+    }
+
+    @Test func writesActionLog() throws {
+        let s = try Sandbox(); defer { s.cleanup() }
+        let log = ActionLog(url: s.root.appending(path: "log/actions.jsonl"))
+        let p = plan([try s.file("a")])
+        _ = Executor(zones: s.zones, dispose: { _ in }, log: log).run(p, previewed: p.fingerprint, dryRun: false)
+        _ = Executor(zones: s.zones, dispose: { _ in }, log: log).run(p, previewed: p.fingerprint, dryRun: false)
+        let text = try String(contentsOf: log.url, encoding: .utf8)
+        #expect(text.split(separator: "\n").count == 2 && text.contains(p.fingerprint))
+    }
+}
+
+@Suite struct SystemZoneTests {
+    @Test(arguments: [
+        "/Library/LaunchDaemons/com.example.x.plist", "/Library/Caches/com.example", "/Applications/Example.app",
+        "/Library/Application Support/Example",
+    ])
+    func acceptsSystemItems(path: String) throws {
+        #expect(try Zones.system.validate(URL(filePath: path)).path == path)
+    }
+
+    @Test(arguments: [
+        "/System/Library/LaunchDaemons/x.plist", "/usr/bin/true", "/Library/Apple/x", "/Library/Application Support/Apple/x",
+        "/Library/Preferences/SystemConfiguration/preferences.plist", "/Library/LaunchDaemons/com.apple.x.plist",
+        "/Applications/Utilities/Terminal.app", "/Applications/Safari.app", "/Library/LaunchDaemons", "/Library", "/",
+        "/private/etc/hosts", "/Users/x", "/Library/Caches/../../System",
+    ])
+    func refusesProtected(path: String) {
+        #expect(throws: SafetyError.self) { try Zones.system.validate(URL(filePath: path)) }
+    }
+
+    @Test func dropsBroadRoots() {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        let zones = Zones(roots: ["/", "/Users", "/Library", "/System/Library", "/usr"].map { URL(filePath: $0) } + [home])
+        #expect(zones.roots.isEmpty)
+    }
+}
+
+@Suite struct CommandTests {
+    static let nasty = [
+        "a b", "a'b", "a\"b", "a;rm -rf ~", "$(id)", "`id`", "a\nb", "a\u{0}b", "", "-rf", "../x", "a/b", "é", "a|b", "a&b",
+        "a>b", "*", "~",
+    ]
+
+    @Test(arguments: nasty)
+    func labelsRejectShellAndOddCharacters(arg: String) {
+        #expect(throws: SafetyError.self) { try Command.bootout(.gui(501), label: arg) }
+        #expect(throws: SafetyError.self) { try Command.disable(.system, label: arg) }
+        #expect(throws: SafetyError.self) { try Command.enable(.gui(501), label: arg) }
+        #expect(throws: SafetyError.self) { try Command.launchctlPrint(.system, label: arg) }
+        #expect(throws: SafetyError.self) {
+            try Command.moveToTrash(URL(filePath: "/Library/Caches/x"), home: URL(filePath: "/Users/pat"), tag: arg)
+        }
+        #expect(throws: SafetyError.self) { try Command.pkgutilFiles(arg) }
+        #expect(throws: SafetyError.self) { try Command.deleteSnapshot(arg) }
+    }
+
+    @Test func acceptsRealLabelsAndDates() throws {
+        #expect(
+            try Command.bootout(.system, label: "com.example.helper").display == "sudo /bin/launchctl bootout system/com.example.helper")
+        #expect(try Command.disable(.gui(501), label: "io.x-y_z.Agent").shellLine == "/bin/launchctl disable gui/501/io.x-y_z.Agent")
+        #expect(try Command.deleteSnapshot("2026-10-24-101500").args == ["deletelocalsnapshots", "2026-10-24-101500"])
+    }
+
+    @Test func mvQuotesPathsWithSpacesAndQuotes() throws {
+        let src = URL(filePath: "/Library/Application Support/Bob's \"App\"")
+        let c = try Command.moveToTrash(src, home: URL(filePath: "/Users/pat"), now: Date(timeIntervalSince1970: 0))
+        #expect(c.args[1] == src.path)
+        #expect(c.shellLine.contains(#"'/Library/Application Support/Bob'\''s "App"'"#))
+        let script = Exec.adminScript(c)
+        #expect(script.hasPrefix("do shell script \"") && script.hasSuffix("\" with administrator privileges"))
+        #expect(script.contains(#"\"App\""#))
+    }
+
+    @Test func trashNameEndsInRandomTag() throws {
+        let a = try Command.moveToTrash(URL(filePath: "/Library/Caches/x"), home: URL(filePath: "/Users/pat"))
+        let b = try Command.moveToTrash(URL(filePath: "/Library/Caches/x"), home: URL(filePath: "/Users/pat"))
+        #expect(a.args[2] != b.args[2])
+        #expect(a.args[2].wholeMatch(of: /\/Users\/pat\/\.Trash\/x \d{8}-\d{6}-[0-9a-f]{12}/) != nil)
+    }
+
+    @Test func mvRejectsControlCharactersAndDots() {
+        for p in ["/Library/Caches/a\nb", "/Library/Caches/../x"] {
+            #expect(throws: SafetyError.self) { try Command.moveToTrash(URL(filePath: p), home: URL(filePath: "/Users/pat")) }
+        }
+    }
+
+    @Test func everyToolExists() {
+        for tool in Tool.allCases { #expect(FileManager.default.isExecutableFile(atPath: tool.rawValue), "\(tool)") }
+    }
+}
+
+@Suite struct IgnoreTests {
+    @Test func coversChildrenAndOwnLog() {
+        var list = IgnoreList()
+        list.add(URL(filePath: "/Users/pat/Library/Caches/keep"))
+        let home = URL(filePath: "/Users/pat")
+        #expect(list.contains(URL(filePath: "/Users/pat/Library/Caches/keep/x"), home: home))
+        #expect(!list.contains(URL(filePath: "/Users/pat/Library/Caches/keeper"), home: home))
+        #expect(list.contains(URL(filePath: "/Users/pat/Library/Logs/MacPat/actions.jsonl"), home: home))
     }
 }
 
@@ -185,9 +348,25 @@ struct Sandbox {
     }
 }
 
+final class Commands: @unchecked Sendable {
+    private let lock = NSLock()
+    private var stored: [Command] = []
+    var all: [Command] { lock.withLock { stored } }
+    func add(_ c: Command) { lock.withLock { stored.append(c) } }
+}
+
 final class Log: @unchecked Sendable {
     private let lock = NSLock()
     private var stored: [URL] = []
     var urls: [URL] { lock.withLock { stored } }
     func add(_ url: URL) { lock.withLock { stored.append(url) } }
+}
+
+@Suite struct DocTests {
+    /// The commands page must name every program MacPat can run.
+    @Test func commandsPageListsEveryTool() throws {
+        let root = URL(filePath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let page = try String(contentsOf: root.appending(path: "docs/reference/commands.md"), encoding: .utf8)
+        for tool in Tool.allCases { #expect(page.contains(tool.rawValue), "\(tool.rawValue) missing from commands.md") }
+    }
 }

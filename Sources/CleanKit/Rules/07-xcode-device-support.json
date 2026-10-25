@@ -1,0 +1,13 @@
+{
+  "id": "xcode-device-support",
+  "group": "Developer",
+  "name": "Device support files",
+  "summary": "Debug symbols copied from each iPhone or Watch you plugged in.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Developer/Xcode/iOS DeviceSupport",
+    "~/Library/Developer/Xcode/watchOS DeviceSupport"
+  ],
+  "reason": "One folder per device OS version. Old versions are dead weight.",
+  "regenerates": "Copied again the next time that device connects."
+}

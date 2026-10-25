@@ -1,7 +1,0 @@
-{
-  "id": "user-caches",
-  "name": "App caches",
-  "summary": "Files apps rebuild on demand. Quit apps first.",
-  "risk": "safe",
-  "paths": ["~/Library/Caches"]
-}

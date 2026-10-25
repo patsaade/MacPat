@@ -1,0 +1,3 @@
+# A run must match the preview the user read
+
+Every module turns its findings into `Step`s and runs them through one `Executor`. A preview records a SHA-256 fingerprint of the chosen steps: each step's action, its risk, and each file's device, inode, and type. A real run passes that fingerprint back, and the executor recomputes it and refuses on any mismatch. New content inside a cache folder doesn't change the fingerprint. A swapped file or a new symlink does. Rejected: trusting the UI's "previewed" flag alone, because a bug there would silently widen what runs. Cost: any change after a preview means previewing again.

@@ -8,6 +8,16 @@ import SwiftUI
 struct RootView: View {
     @State private var selection: String? = modules.first?.id
     @State private var hasAccess = FullDiskAccess.granted
+    /// A fixed module and view for README snapshots. Nil in normal use.
+    private var demo: (id: String, view: AnyView)?
+
+    init() {}
+
+    init(demo id: String, view: AnyView) {
+        demo = (id, view)
+        _selection = State(initialValue: id)
+        _hasAccess = State(initialValue: true)
+    }
 
     private var current: (any MacPatModule)? { modules.first { $0.id == selection } }
 
@@ -19,10 +29,11 @@ struct RootView: View {
                 RetroWindow(title: current?.title ?? "MacPat") {
                     VStack(spacing: 0) {
                         if !hasAccess {
-                            accessBanner
-                            RetroRule()
+                            RetroBanner(.warning, "MacPat needs Full Disk Access to see every folder. It sends nothing anywhere.") {
+                                Button("Open Settings") { FullDiskAccess.openSettings() }
+                            }
                         }
-                        current?.makeView()
+                        demo?.view ?? current?.makeView()
                     }
                 }
                 .padding(28)
@@ -33,9 +44,9 @@ struct RootView: View {
         .tint(Retro.ink)
         .buttonStyle(RetroButtonStyle())
         .toggleStyle(RetroToggleStyle())
-        .frame(minWidth: 680, minHeight: 460)
+        .frame(minWidth: 860, minHeight: 560)
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
-            hasAccess = FullDiskAccess.granted
+            if demo == nil { hasAccess = FullDiskAccess.granted }
         }
     }
 
@@ -44,8 +55,12 @@ struct RootView: View {
             PatMark().fill(Retro.ink).frame(width: 18, height: 18).padding(.trailing, 6).accessibilityHidden(true)
             Text("MacPat").bold().padding(.trailing, 12)
             ForEach(modules, id: \.id) { module in
-                Button(module.title) { selection = module.id }
-                    .buttonStyle(RetroTabStyle(selected: module.id == selection))
+                Button {
+                    selection = module.id
+                } label: {
+                    Label(module.title, systemImage: module.symbol).labelStyle(.titleAndIcon)
+                }
+                .buttonStyle(RetroTabStyle(selected: module.id == selection))
             }
             Spacer()
         }
@@ -53,17 +68,6 @@ struct RootView: View {
         .frame(height: 30)
         .background(Retro.paper)
         .overlay(alignment: .bottom) { RetroRule() }
-    }
-
-    private var accessBanner: some View {
-        HStack {
-            Image(systemName: "lock.shield").accessibilityHidden(true)
-            Text("MacPat needs Full Disk Access to see every cache folder. It sends nothing anywhere.")
-            Spacer()
-            Button("Open Settings") { FullDiskAccess.openSettings() }
-        }
-        .padding(10)
-        .accessibilityElement(children: .combine)
     }
 }
 

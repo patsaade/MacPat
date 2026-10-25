@@ -1,0 +1,12 @@
+{
+  "id": "cargo-cache",
+  "group": "Package caches",
+  "name": "Cargo downloads",
+  "summary": "Crate archives Cargo downloaded.",
+  "risk": "review",
+  "paths": [
+    "~/.cargo/registry/cache"
+  ],
+  "reason": "Safe to clear, but offline builds will fail until you are online again.",
+  "regenerates": "Downloaded again on next build."
+}

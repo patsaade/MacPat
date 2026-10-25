@@ -1,0 +1,12 @@
+{
+  "id": "crash-reports",
+  "group": "Caches and logs",
+  "name": "Crash reports",
+  "summary": "Reports from apps that crashed.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Logs/DiagnosticReports"
+  ],
+  "reason": "Already sent, or never will be. Keep them if you are chasing a crash.",
+  "regenerates": "Never needed again."
+}

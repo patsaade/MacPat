@@ -1,0 +1,16 @@
+{
+  "id": "user-logs",
+  "group": "Caches and logs",
+  "name": "Logs",
+  "summary": "Old app logs. Useful only when debugging.",
+  "risk": "safe",
+  "paths": [
+    "~/Library/Logs"
+  ],
+  "reason": "Text logs apps write as they run. Nothing reads them back.",
+  "regenerates": "Apps start new logs.",
+  "exclude": [
+    "DiagnosticReports",
+    "MacPat"
+  ]
+}

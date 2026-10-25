@@ -1,7 +1,0 @@
-{
-  "id": "user-logs",
-  "name": "Logs",
-  "summary": "Old log files. Nothing depends on them.",
-  "risk": "safe",
-  "paths": ["~/Library/Logs"]
-}
