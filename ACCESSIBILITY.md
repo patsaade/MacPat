@@ -18,7 +18,9 @@ The goal is every control usable with VoiceOver, the keyboard alone, and your sy
 - The Clean grid works from the keyboard: arrows move the row, Space toggles it, Return opens the detail pane, Escape closes it. Column headers say their sort direction.
 - The drawn scrollbar sits on the real scroll view, so trackpad, paging keys, and VoiceOver scrolling work as usual.
 - Click targets are at least 24 pt, even where the drawing is smaller.
-- Command-1 to 6 switch modules. Command-comma opens Settings.
+- Command-1 to 6 switch modules. Command-comma opens Settings. The Plan menu has Scan, Preview, Show Commands, and Close Detail.
+- Each grid row reads as one line: name, size, verdict, and whether it needs admin. Sort buttons say their direction. Segments say which one is chosen.
+- A folder macOS won't let MacPat read is a locked "Needs access" row, not an empty list.
 
 ## Known gaps
 

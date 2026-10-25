@@ -15,6 +15,8 @@ public struct Outcome: Equatable, Sendable {
     public var failures: [Failure] = []
     /// Set when the whole run was refused before any step ran.
     public var refused: String?
+    /// Steps left unrun because the user stopped the run. Each step that did start finished.
+    public var skipped = 0
 
     public init(dryRun: Bool) { self.dryRun = dryRun }
 
@@ -52,14 +54,23 @@ public struct Executor: Sendable {
     /// preview the user saw; anything else is refused. Failures are listed, never fatal.
     // shortcut: a path can still change between validate and dispose. Admin moves run as root, but only
     // from root-owned zone folders into a randomly named Trash path; a held directory handle would close it fully.
-    public func run(_ plan: Plan, previewed: String?, dryRun: Bool) -> Outcome {
+    /// `progress` is asked before each step with how many are done and how many there are. Answer false to
+    /// stop. A step is never interrupted once it starts.
+    public func run(
+        _ plan: Plan, previewed: String?, dryRun: Bool, progress: (@Sendable (_ done: Int, _ total: Int) -> Bool)? = nil
+    ) -> Outcome {
         var outcome = Outcome(dryRun: dryRun)
         if !dryRun, previewed != plan.fingerprint {
             outcome.refused = SafetyError.planChanged.description
             return outcome
         }
         var done = Set<String>()
-        for step in plan.steps where done.insert(step.id).inserted {
+        let total = plan.steps.count
+        for (index, step) in plan.steps.enumerated() where done.insert(step.id).inserted {
+            if let progress, !progress(index, total) {
+                outcome.skipped = total - index
+                break
+            }
             do {
                 guard step.risk != .locked else { throw SafetyError.locked }
                 if case .sequence(let all) = step.action {

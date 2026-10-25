@@ -90,14 +90,15 @@ public enum LaunchScanner {
             let files = ((try? fm.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)) ?? []).filter {
                 $0.pathExtension == "plist"
             }
-            items += files.sorted { $0.path < $1.path }.compactMap { parse($0, place: place) }
+            // Checking a code signature is slow and independent per file, so do them side by side.
+            items += concurrentMap(files.sorted { $0.path < $1.path }) { parse($0, place: place) }.compactMap { $0 }
         }
         let uid = getuid()
         let guiLoaded = loadedLabels((try? runner.run(.launchctlList())) ?? "")
         let disabled =
             disabledLabels((try? runner.run(.launchctlPrintDisabled(.gui(uid)))) ?? "")
             .union(disabledLabels((try? runner.run(.launchctlPrintDisabled(.system))) ?? ""))
-        return items.map { item in
+        return concurrentMap(items) { item in
             var item = item
             item.disabled = disabled.contains(item.label)
             if item.place == .daemon {

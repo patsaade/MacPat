@@ -8,6 +8,7 @@
     public enum StatusDemo {
         public static func view() -> AnyView {
             var s = Snapshot()
+            s.ready = true
             s.cpu = 0.23
             s.memoryUsed = 15_800_000_000
             s.memoryTotal = 24_000_000_000

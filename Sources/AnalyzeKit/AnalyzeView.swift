@@ -25,6 +25,7 @@ struct AnalyzeView: View {
     @State private var path: [URL] = [FileManager.default.homeDirectoryForCurrentUser]
     @State private var entries: [Entry] = []
     @State private var sizing = false
+    @State private var unreadable = false
     @State private var basket: [Entry] = []
     @State private var model: PlanModel
 
@@ -33,7 +34,7 @@ struct AnalyzeView: View {
         _model = State(
             initialValue: PlanModel(executor: Executor(zones: LargeOldScanner.zones(home: home), home: home, log: .standard(home: home))) {
                 LargeOldScanner(home: home).steps()
-            })
+            }.remembering("analyze"))
     }
 
     private var demo = false
@@ -55,7 +56,7 @@ struct AnalyzeView: View {
             RetroRule(thickness: 1)
             switch tab {
             case .space: folders
-            case .large: PlanView(model: model, empty: "No files over 500 MB that sat unopened for 180 days.")
+            case .large: PlanView(model: model, layout: .grid, empty: "No files over 500 MB that sat unopened for 180 days.")
             }
         }
         .task { if !demo { summary = await Task.detached { VolumeSummary.read() }.value } }
@@ -81,18 +82,26 @@ struct AnalyzeView: View {
 
     private var folders: some View {
         VStack(spacing: 0) {
-            HStack {
+            RetroToolbar {
                 Button("Up") { path.removeLast() }.disabled(path.count < 2)
+                    .keyboardShortcut(.upArrow, modifiers: .command)
+                    .help("Up one folder (Command-Up Arrow)")
                 Text(PathFormat.short(path.last!)).bold().lineLimit(1).truncationMode(.head)
                 Spacer()
                 if !basket.isEmpty {
-                    Button("Review \(basket.count) in Plan") { tab = .large }
+                    Button("Review \(basket.count) in Large and old") { tab = .large }
                 }
             }
-            .padding(8)
-            RetroRule(thickness: 1)
             RetroScroll {
                 VStack(spacing: 0) {
+                    if !sizing && entries.isEmpty {
+                        VStack(spacing: 8) {
+                            PatMascot(.idle).frame(width: 72, height: 72)
+                            Text(unreadable ? "macOS didn't let MacPat read this folder." : "Empty folder.")
+                            if unreadable { Button("Open Full Disk Access") { FullDiskAccess.openSettings() } }
+                        }
+                        .padding(24).frame(maxWidth: .infinity)
+                    }
                     let top = max(entries.first?.bytes ?? 1, 1)
                     ForEach(entries) { entry in
                         row(entry, top: top)
@@ -143,8 +152,13 @@ struct AnalyzeView: View {
     }
 
     private func size() async {
+        let folder = path.last!
         sizing = true
-        entries = await FolderSizer.children(of: path.last!)
+        let (sized, readable) = await FolderSizer.list(folder)
+        // A slower run for a folder you already left must not overwrite the one on screen.
+        guard !Task.isCancelled, path.last == folder else { return }
+        entries = sized
+        unreadable = !readable
         sizing = false
     }
 }

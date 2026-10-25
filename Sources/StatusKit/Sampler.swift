@@ -15,6 +15,8 @@ public struct Snapshot: Sendable, Equatable {
         public var id: Int32 { pid }
     }
 
+    /// False until the first real reading, so the screen can say so instead of showing zeros.
+    public var ready = false
     public var cpu: Double = 0
     public var memoryUsed: Int64 = 0
     public var memoryTotal: Int64 = 0
@@ -53,19 +55,23 @@ public final class Sampler: @unchecked Sendable {
     private var lastProc: [Int32: UInt64] = [:]
     private var lastTime: UInt64 = 0
     private let lock = NSLock()
+    // Touched only inside `lock`.
+    nonisolated(unsafe) private var batteryCache: Battery?
+    nonisolated(unsafe) private var batteryAt: Date?
 
     public init() {}
 
     public func sample() -> Snapshot {
         lock.withLock {
             var s = Snapshot()
+            s.ready = true
             s.cpu = cpu()
             (s.memoryUsed, s.memoryTotal) = memory()
             s.pressure = pressure()
             let disk = try? URL(filePath: "/").resourceValues(forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityKey])
             s.diskTotal = Int64(disk?.volumeTotalCapacity ?? 0)
             s.diskFree = Int64(disk?.volumeAvailableCapacity ?? 0)
-            s.battery = battery()
+            s.battery = cachedBattery()
             s.thermal = ProcessInfo.processInfo.thermalState
             let procs = processes()
             s.topCPU = Array(procs.sorted { $0.cpu > $1.cpu }.prefix(5))
@@ -120,6 +126,14 @@ public final class Sampler: @unchecked Sendable {
         var size = MemoryLayout<Int32>.size
         sysctlbyname("kern.memorystatus_vm_pressure_level", &level, &size, nil, 0)
         return level
+    }
+
+    /// Battery details barely change, and reading them is the slowest part of a sample. Reuse for a minute.
+    private func cachedBattery() -> Battery? {
+        if let at = batteryAt, Date().timeIntervalSince(at) < 60 { return batteryCache }
+        batteryCache = battery()
+        batteryAt = Date()
+        return batteryCache
     }
 
     func battery() -> Battery? {

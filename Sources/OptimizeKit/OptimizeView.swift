@@ -21,12 +21,16 @@ struct OptimizeView: View {
         OptimizeTasks.steps(snapshots: VolumeSummary.read().snapshots)
     }
 
-    init() {}
+    init() { model.remember(as: "optimize") }
 
     init(demo model: PlanModel) { _model = State(initialValue: model) }
 
     var body: some View {
-        PlanView(model: model, runLabel: "Run…", empty: "Nothing to run.") {
+        PlanView(
+            model: model, layout: .grid,
+            intro: Intro("optimize", "Each task says what it does, what it costs, and how to undo it. Some ask for your password."),
+            runLabel: "Run…", empty: "Nothing to run."
+        ) {
             RetroBanner(
                 .info,
                 "No \"free up memory\" or \"run maintenance scripts\" here. macOS does those itself, and forcing them makes things slower.")

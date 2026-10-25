@@ -19,7 +19,7 @@ MacPat is a small, open-source Mac cleaner for Apple silicon. Before it touches 
 | Module | Does |
 | --- | --- |
 | Clean | Caches, logs, Xcode leftovers, package manager caches, old installers, project build folders. |
-| Persistence | Everything that starts on its own: launch agents and daemons, helpers, cron, login hooks, profiles, extensions, shell startup lines. Disable, remove, or re-enable. |
+| Startup Items | Everything that starts on its own: launch agents and daemons, helpers, cron, login hooks, profiles, extensions, shell startup lines. Disable, remove, or re-enable. |
 | Uninstall | An app plus its leftovers, ranked by how sure the match is. Also finds orphaned files. |
 | Analyze | Where the space went, what macOS can purge, and big files nobody opened in months. |
 | Status | CPU, memory, disk, battery, heat, and the top processes. |

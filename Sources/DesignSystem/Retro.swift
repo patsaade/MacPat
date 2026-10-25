@@ -193,7 +193,7 @@ public struct RetroTabStyle: ButtonStyle {
         return configuration.label
             .font(Retro.font)
             .padding(.horizontal, 8)
-            .padding(.vertical, 2)
+            .padding(.vertical, 4)
             .foregroundStyle(inverted ? Retro.paper : Retro.ink)
             .background(inverted ? Retro.ink : Retro.paper)
             .modifier(FocusRing(radius: 0))

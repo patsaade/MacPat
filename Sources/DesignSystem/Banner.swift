@@ -7,11 +7,12 @@ import SwiftUI
 /// so the meaning never rests on color. VoiceOver reads it out when it appears.
 public struct RetroBanner<Actions: View>: View {
     public enum Kind: Sendable {
-        case info, warning, admin, dryRun
+        case info, done, warning, admin, dryRun
 
         var symbol: String {
             switch self {
             case .info: "info.square"
+            case .done: "checkmark.square"
             case .warning: "exclamationmark.triangle"
             case .admin: "lock.shield"
             case .dryRun: "eye"
@@ -21,6 +22,7 @@ public struct RetroBanner<Actions: View>: View {
         var word: String {
             switch self {
             case .info: "Note"
+            case .done: "Done"
             case .warning: "Warning"
             case .admin: "Admin"
             case .dryRun: "Dry run"
@@ -52,8 +54,11 @@ public struct RetroBanner<Actions: View>: View {
             RetroRule(thickness: 1)
         }
         .accessibilityElement(children: .combine)
-        .onAppear { AccessibilityNotification.Announcement("\(kind.word). \(text)").post() }
+        .onChange(of: text, initial: true) { AccessibilityNotification.Announcement("\(kind.word). \(text)").post() }
     }
+
+    /// Notes and results sit outlined. Warnings, admin, and dry run are inverted.
+    private var plain: Bool { kind == .info || kind == .done }
 
     private var row: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -61,8 +66,8 @@ public struct RetroBanner<Actions: View>: View {
             Text(kind.word.uppercased())
                 .bold()
                 .padding(.horizontal, 4)
-                .foregroundStyle(kind == .info ? Retro.ink : Retro.paper)
-                .background(kind == .info ? Retro.paper : Retro.ink)
+                .foregroundStyle(plain ? Retro.ink : Retro.paper)
+                .background(plain ? Retro.paper : Retro.ink)
             Text(text).fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 8)
             actions

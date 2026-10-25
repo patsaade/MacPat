@@ -7,7 +7,7 @@ import SwiftUI
 
 public struct PersistenceModule: MacPatModule {
     public let id = "persistence"
-    public let title = "Persistence"
+    public let title = "Startup Items"
     public let symbol = "arrow.triangle.2.circlepath"
 
     public init() {}
@@ -19,6 +19,7 @@ struct PersistenceView: View {
     @State private var source = PersistenceSource(mode: .disable, home: FileManager.default.homeDirectoryForCurrentUser)
     @State private var model: PlanModel
     @State private var deepError: String?
+    @State private var explainDeep = false
 
     init() {
         let home = FileManager.default.homeDirectoryForCurrentUser
@@ -27,7 +28,7 @@ struct PersistenceView: View {
         _model = State(
             initialValue: PlanModel(
                 executor: Executor(zones: PersistenceSource.zones(home: home), home: home, log: .standard(home: home))
-            ) { initial.steps() })
+            ) { initial.steps() }.remembering("persistence"))
     }
 
     init(demo model: PlanModel) {
@@ -35,10 +36,15 @@ struct PersistenceView: View {
     }
 
     var body: some View {
-        PlanView(model: model, runLabel: "\(source.mode.rawValue)…", empty: "Nothing found that starts on its own.") {
+        PlanView(
+            model: model, layout: .grid,
+            intro: Intro(
+                "startup", "Everything that starts on its own, from launch agents to shell lines. Scan only reads. Disable keeps the file."),
+            runLabel: "\(source.mode.rawValue)…", empty: "Nothing found that starts on its own."
+        ) {
             VStack(spacing: 0) {
                 RetroBanner(.info, "This is not a malware scan. Unusual means worth a look, not harmful.")
-                HStack(spacing: 12) {
+                RetroToolbar {
                     RetroSegments(
                         "Action", options: PersistenceMode.allCases.map { ($0, $0.rawValue) },
                         selection: Binding(get: { source.mode }, set: { update { $0.mode = $1 }($0) })
@@ -46,16 +52,19 @@ struct PersistenceView: View {
                     .help(source.mode.help)
                     Toggle("Show Apple items", isOn: Binding(get: { source.includeApple }, set: { update { $0.includeApple = $1 }($0) }))
                     Spacer()
-                    Button("Deep Scan…") { Task { await deepScan() } }
+                    Button("Deep Scan…") { explainDeep = true }
                         .help("Reads the full Login Items list with sfltool. macOS asks for your password. Read-only.")
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
                 Text(source.mode.help).font(.callout.monospaced()).frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 12)
-                    .padding(.bottom, 6)
+                    .padding(.vertical, 6)
                 RetroRule(thickness: 1)
                 if let deepError { RetroBanner(.warning, "Deep scan failed: \(deepError)") }
             }
+        }
+        .confirmationDialog("Run a deep scan?", isPresented: $explainDeep, titleVisibility: .visible) {
+            Button("Continue") { Task { await deepScan() } }
+        } message: {
+            Text("This reads the full Login Items list with sfltool. macOS will ask for your password. It only reads. Nothing is changed.")
         }
     }
 

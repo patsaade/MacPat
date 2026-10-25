@@ -8,6 +8,17 @@ import UniformTypeIdentifiers
 
 /// The preview breakdown every module shares: groups, steps, reasons, facts, and the
 /// exact command each step stands for. Run stays locked until a preview of this exact choice.
+/// A one-time note for a screen: what Scan looks at and that nothing changes until Run. Shown until dismissed.
+public struct Intro: Sendable {
+    let key: String
+    let text: String
+
+    public init(_ key: String, _ text: String) {
+        self.key = key
+        self.text = text
+    }
+}
+
 public enum PlanLayout: Sendable {
     /// Tall rows, one step per block.
     case stacked
@@ -18,17 +29,22 @@ public enum PlanLayout: Sendable {
 public struct PlanView<Header: View>: View {
     @Bindable var model: PlanModel
     let layout: PlanLayout
+    let intro: Intro?
+    @AppStorage private var introSeen: Bool
     let runLabel: String
     let empty: String
     let header: Header
     @State private var confirming = false
 
     public init(
-        model: PlanModel, layout: PlanLayout = .stacked, runLabel: String = "Move to Trash…", empty: String = "Nothing found.",
+        model: PlanModel, layout: PlanLayout = .stacked, intro: Intro? = nil, runLabel: String = "Move to Trash",
+        empty: String = "Nothing found.",
         @ViewBuilder header: () -> Header = { EmptyView() }
     ) {
         self.model = model
         self.layout = layout
+        self.intro = intro
+        _introSeen = AppStorage(wrappedValue: false, "intro.\(intro?.key ?? "none")")
         self.runLabel = runLabel
         self.empty = empty
         self.header = header()
@@ -36,6 +52,9 @@ public struct PlanView<Header: View>: View {
 
     public var body: some View {
         VStack(spacing: 0) {
+            if let intro, !introSeen, !model.forSnapshot {
+                RetroBanner(.info, intro.text) { Button("Got It") { introSeen = true } }
+            }
             header
             banners
             list
@@ -43,12 +62,28 @@ public struct PlanView<Header: View>: View {
             footer
         }
         .task { if !model.scanned { await model.scan() } }
+        .focusedSceneValue(\.planActions, active ? actions : nil)
+    }
+
+    @Environment(\.moduleActive) private var active
+
+    /// What the Plan menu drives. Only the module on screen offers it.
+    private var actions: PlanActions {
+        PlanActions(
+            scan: { Task { await model.scan() } },
+            preview: { Task { await model.preview() } },
+            toggleCommands: { model.showCommands.toggle() },
+            closeDetail: { model.paneOpen = false },
+            canScan: !model.scanning && !model.working,
+            canPreview: !model.chosen.isEmpty && !model.working,
+            detailOpen: model.paneOpen)
     }
 
     private var banners: some View {
         VStack(spacing: 0) { bannerItems }
             .motion(Motion.settle, value: model.outcome)
             .motion(Motion.settle, value: model.adminCount)
+            .motion(Motion.settle, value: model.scanCancelled)
     }
 
     @ViewBuilder private var bannerItems: some View {
@@ -59,14 +94,41 @@ public struct PlanView<Header: View>: View {
                 RetroBanner(.dryRun, "Nothing changed. \(summary(out, verb: "Would do"))").transition(
                     .opacity.combined(with: .move(edge: .top)))
             } else {
-                RetroBanner(.info, "\(summary(out, verb: "Done")) Look in the Trash to put anything back.")
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                RetroBanner(.done, doneText(out)) {
+                    Button("Open Trash") { NSWorkspace.shared.open(URL.trashDirectory) }
+                    Button("Open Log") { NSWorkspace.shared.open(ActionLog.folder(home: FileManager.default.homeDirectoryForCurrentUser)) }
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
+        }
+        if model.scanCancelled && !model.scanning {
+            RetroBanner(.info, "Scan stopped. This is what it found before then.") {
+                Button("Scan Again") { Task { await model.scan() } }
+            }
+            .transition(.opacity.combined(with: .move(edge: .top)))
+        }
+        if let touched = model.neverTouched {
+            RetroBanner(.info, "\(touched.title) won't show up in scans again. Settings lists everything you marked.") {
+                Button("Undo") { Task { await model.undoNeverTouch() } }
+                Button("OK") { model.dismissNeverTouched() }
+            }
+            .transition(.opacity.combined(with: .move(edge: .top)))
         }
         if model.adminCount > 0 {
             RetroBanner(.admin, "\(model.adminCount) chosen steps need admin. macOS will ask for your password.")
                 .transition(.opacity.combined(with: .move(edge: .top)))
         }
+    }
+
+    /// What happened, from what ran. Not every step goes to the Trash.
+    private func doneText(_ out: Outcome) -> String {
+        let moved = model.lastRun.trash
+        let ran = model.lastRun.commands
+        var parts = [summary(out, verb: "Done")]
+        if out.skipped > 0 { parts.append("Stopped. \(Count.steps(out.skipped)) did not run.") }
+        if moved > 0 { parts.append("\(moved) went to the Trash. Put them back from there.") }
+        if ran > 0 { parts.append("\(ran) ran a command and can't be put back from the Trash.") }
+        return parts.joined(separator: " ")
     }
 
     private func summary(_ out: Outcome, verb: String) -> String {
@@ -85,7 +147,13 @@ public struct PlanView<Header: View>: View {
         if model.scanning {
             HStack(spacing: 10) {
                 PatMascot(.scanning).frame(width: 40, height: 40)
-                Text("Scanning…")
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Scanning…")
+                    if let progress = model.progress {
+                        Text("\(progress.done) of \(progress.total) places").font(.caption.monospaced())
+                    }
+                }
+                Button("Cancel") { model.cancelScan() }
             }
             .padding(10).background(Retro.paper).border(Retro.ink, width: Retro.line)
         }
@@ -115,7 +183,7 @@ public struct PlanView<Header: View>: View {
             if let out = model.outcome, !out.dryRun, out.refused == nil, out.failures.isEmpty {
                 PatMascot(.done).frame(width: 28, height: 28)
             }
-            Text(status).lineLimit(2).layoutPriority(-1)
+            Text(status).lineLimit(3).layoutPriority(-1)
             Spacer(minLength: 8)
             Toggle("Show commands", isOn: $model.showCommands)
                 .help("Show the shell line each step stands for.")
@@ -128,22 +196,48 @@ public struct PlanView<Header: View>: View {
             .disabled(model.chosen.isEmpty)
             Button("Scan") { Task { await model.scan() } }
                 .disabled(model.scanning || model.working)
-                .help("Look again. Nothing is changed.")
+                .help("Look again. Nothing is changed. Command-R.")
             Button("Preview") { Task { await model.preview() } }
                 .disabled(model.chosen.isEmpty || model.working)
-                .keyboardShortcut("p")
-                .help("A dry run. Checks every step and changes nothing.")
-            Button(runLabel) { confirming = true }
+                .help("A dry run. Checks every item and changes nothing. Shift-Command-P.")
+            Button(runTitle) { confirming = true }
                 .fixedSize()
                 .disabled(model.previewed == nil || model.working)
                 .help("Preview first. Then this unlocks.")
         }
         .padding(12)
-        .confirmationDialog("Run \(model.chosen.count) steps?", isPresented: $confirming, titleVisibility: .visible) {
+        .confirmationDialog(confirmTitle, isPresented: $confirming, titleVisibility: .visible) {
             Button(runLabel.replacingOccurrences(of: "…", with: ""), role: .destructive) { Task { await model.run() } }
         } message: {
-            Text("\(ByteFormat.string(model.chosenBytes)) in total. Files go to the Trash. \(model.adminCount) steps ask for admin.")
+            Text(confirmMessage)
         }
+    }
+
+    /// The run button names the verb and the count: "Move 12 to Trash…".
+    private var runTitle: String {
+        let verb = runLabel.replacingOccurrences(of: "…", with: "")
+        let n = model.chosen.count
+        guard n > 0 else { return verb + "…" }
+        // "Move to Trash" reads best with the count after the verb: "Move 12 to Trash".
+        if let range = verb.range(of: " to ") { return verb[..<range.lowerBound] + " \(n)" + verb[range.lowerBound...] + "…" }
+        return "\(verb) \(n)…"
+    }
+
+    private var confirmTitle: String {
+        let n = Count.steps(model.chosen.count)
+        return model.commandCount == 0 ? "Move \(n) to the Trash?" : "Run \(n)?"
+    }
+
+    private var confirmMessage: String {
+        var lines: [String] = []
+        if model.chosenBytes > 0 { lines.append("\(ByteFormat.string(model.chosenBytes)) in total.") }
+        if model.trashCount > 0 { lines.append("\(model.trashCount) go to the Trash, where you can put them back.") }
+        if model.commandCount > 0 { lines.append("\(model.commandCount) run a command. The Trash can't undo those.") }
+        if model.reviewCount > 0 { lines.append("\(model.reviewCount) are marked REVIEW.") }
+        if model.adminCount > 0 { lines.append("\(model.adminCount) ask for your password.") }
+        let first = model.chosenSteps.prefix(3).map(\.title).joined(separator: ", ")
+        if !first.isEmpty { lines.append("Includes " + first + (model.chosen.count > 3 ? ", and more." : ".")) }
+        return lines.joined(separator: " ")
     }
 
     private var status: String {
@@ -192,7 +286,7 @@ private struct GroupSection: View {
                 Button {
                     if open { model.expanded.remove(name) } else { model.expanded.insert(name) }
                 } label: {
-                    Image(systemName: open ? "chevron.down" : "chevron.right").frame(width: 14)
+                    Image(systemName: open ? "chevron.down" : "chevron.right").frame(width: 24, height: 24).contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(open ? "Hide \(name) steps" : "Show \(name) steps")
@@ -304,7 +398,7 @@ extension Risk {
 }
 
 enum Count {
-    static func steps(_ n: Int) -> String { n == 1 ? "1 step" : "\(n) steps" }
+    static func steps(_ n: Int) -> String { n == 1 ? "1 item" : "\(n) items" }
 }
 
 public enum PathFormat {
@@ -314,5 +408,16 @@ public enum PathFormat {
         if url.path == home { return "~" }
         if url.path.hasPrefix(home + "/") { return "~" + url.path.dropFirst(home.count) }
         return url.path.replacing(/^\/Users\/[^\/]+(\/|$)/, with: "~/")
+    }
+}
+
+extension Action {
+    /// True when the action ends with the item in the Trash, where you can put it back.
+    var movesToTrash: Bool {
+        switch self {
+        case .trash, .adminTrash: true
+        case .sequence(let parts): parts.contains { $0.movesToTrash }
+        case .command, .none: false
+        }
     }
 }

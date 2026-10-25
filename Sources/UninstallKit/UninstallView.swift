@@ -61,16 +61,18 @@ struct UninstallView: View {
         _model = State(
             initialValue: PlanModel(executor: Executor(zones: LeftoverScanner.zones(home: home), home: home, log: .standard(home: home))) {
                 []
-            })
+            }.remembering("uninstall"))
     }
 
     init(demo apps: [AppInfo], selected: AppInfo, model: PlanModel) {
         _apps = State(initialValue: apps)
         _selection = State(initialValue: selected.url)
         _model = State(initialValue: model)
+        _loading = State(initialValue: false)
         demo = true
     }
 
+    @State private var loading = true
     private var demo = false
 
     private var shown: [AppInfo] { filter.isEmpty ? apps : apps.filter { $0.name.localizedCaseInsensitiveContains(filter) } }
@@ -82,6 +84,8 @@ struct UninstallView: View {
                 RetroRule(thickness: 1)
                 RetroScroll {
                     VStack(alignment: .leading, spacing: 0) {
+                        if loading { Text("Reading apps…").padding(10) }
+                        if !loading && shown.isEmpty && !filter.isEmpty { Text("No app matches \"\(filter)\".").padding(10) }
                         row("Orphaned files", selected: orphans) { pick(nil) }
                         RetroRule(thickness: 1)
                         ForEach(shown) { app in
@@ -100,7 +104,14 @@ struct UninstallView: View {
             if selection == nil && !orphans {
                 Text("Pick an app on the left, or drop one here.").frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                PlanView(model: model, empty: "Nothing found.") {
+                PlanView(
+                    model: model, layout: .grid,
+                    intro: Intro(
+                        "uninstall",
+                        "Pick an app. MacPat lists the files it left around and why each is yours to remove. Nothing is removed until you Run."
+                    ),
+                    empty: "Nothing found."
+                ) {
                     if let name = runningName {
                         RetroBanner(.warning, "Quit \(name) first. Everything stays locked while it runs. Then click Scan.")
                     }
@@ -110,7 +121,12 @@ struct UninstallView: View {
                 }
             }
         }
-        .task { if !demo { apps = await Task.detached { AppIndex.scan() }.value } }
+        .task {
+            if !demo {
+                apps = await Task.detached { AppIndex.scan() }.value
+                loading = false
+            }
+        }
     }
 
     private var runningName: String? {

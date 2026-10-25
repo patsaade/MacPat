@@ -45,11 +45,24 @@ public struct Entry: Sendable, Identifiable, Hashable {
 public enum FolderSizer {
     /// Sizes each child in parallel. Symlinks count as themselves. APFS clones are counted
     /// in full each time, so totals can be higher than the space they really use.
-    public static func children(of folder: URL) async -> [Entry] {
-        let urls =
-            (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey]))
-            ?? []
-        return await withTaskGroup(of: Entry.self) { group in
+    public static func children(of folder: URL) async -> [Entry] { await list(folder).entries }
+
+    /// Like `children`, and says whether the folder could be read at all. An empty folder and a folder
+    /// macOS keeps closed look the same in a list, and they are not the same thing.
+    public static func list(_ folder: URL) async -> (entries: [Entry], readable: Bool) {
+        let urls: [URL]
+        do {
+            urls = try FileManager.default.contentsOfDirectory(
+                at: folder, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+        } catch {
+            return ([], false)
+        }
+        let entries = await sized(urls)
+        return (entries, true)
+    }
+
+    private static func sized(_ urls: [URL]) async -> [Entry] {
+        await withTaskGroup(of: Entry.self) { group in
             for url in urls {
                 group.addTask {
                     let v = try? url.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey, .isPackageKey])

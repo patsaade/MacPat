@@ -70,7 +70,7 @@ struct PlanGrid: View {
                 header(columns)
                 RetroScroll {
                     ScrollViewReader { proxy in
-                        VStack(spacing: 0) {
+                        LazyVStack(spacing: 0) {
                             if model.scanned && model.steps.isEmpty {
                                 VStack(spacing: 8) {
                                     PatMascot(.idle).frame(width: 72, height: 72)
@@ -78,7 +78,7 @@ struct PlanGrid: View {
                                 }
                                 .padding(24).frame(maxWidth: .infinity)
                             }
-                            let largest = model.steps.map(\.bytes).max() ?? 0
+                            let largest = model.largestBytes
                             ForEach(model.sortedGroups, id: \.name) { group in
                                 GridGroup(model: model, name: group.name, steps: group.steps, largest: largest, columns: columns)
                             }
@@ -90,6 +90,7 @@ struct PlanGrid: View {
                 }
             }
         }
+        .disabled(model.scanning)
         .focusable()
         .focused($focused)
         .focusEffectDisabled()
@@ -116,6 +117,9 @@ struct PlanGrid: View {
             guard model.paneOpen else { return .ignored }
             model.paneOpen = false
             return .handled
+        }
+        .overlay {
+            if focused { Rectangle().strokeBorder(Retro.ink, style: StrokeStyle(lineWidth: 1, dash: [1, 3])).allowsHitTesting(false) }
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Steps")
@@ -192,7 +196,7 @@ private struct GridGroup: View {
     private var open: Bool { model.expanded.contains(name) }
 
     var body: some View {
-        VStack(spacing: 0) {
+        LazyVStack(spacing: 0) {
             groupRow
             RetroRule(thickness: 1)
             if open {
@@ -260,6 +264,15 @@ private struct GridRow: View {
 
     private var selected: Bool { model.selected == step.id }
 
+    /// Name, size, and verdict in one breath, so VoiceOver doesn't read three separate cells.
+    private var rowLabel: String {
+        [
+            step.title, step.bytes > 0 ? ByteFormat.string(step.bytes) : nil, step.risk.word.lowercased(),
+            step.needsAdmin ? "needs admin" : nil,
+        ]
+        .compactMap { $0 }.joined(separator: ", ")
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
@@ -282,10 +295,12 @@ private struct GridRow: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(rowLabel)
                 .accessibilityHint("Opens the detail pane")
                 .cell(flex: Cell.name)
                 if columns.path {
-                    Text(step.url.map(PathFormat.short) ?? "").font(.callout.monospaced()).lineLimit(1).truncationMode(.middle)
+                    Text(step.url.map(PathFormat.short) ?? step.fact("File") ?? step.fact("Program") ?? "").font(.callout.monospaced())
+                        .lineLimit(1).truncationMode(.middle)
                         .cell(flex: Cell.path)
                 }
                 Text(step.bytes > 0 ? ByteFormat.string(step.bytes) : "").monospacedDigit()
@@ -297,7 +312,7 @@ private struct GridRow: View {
                 if columns.modified {
                     Text(
                         model.modified[step.id].map { Self.relative.localizedString(for: $0, relativeTo: .now) }
-                            ?? step.facts.first { $0.label == "Modified" }?.value ?? "—"
+                            ?? step.fact("Modified") ?? step.fact("Plist changed") ?? "—"
                     )
                     .font(.callout.monospaced()).lineLimit(1).cell(width: Cell.modified)
                 }
@@ -411,4 +426,9 @@ struct DetailPane: View {
             Button("Copy Command") { StepActions.copyCommand(step) }
         }
     }
+}
+
+extension Step {
+    /// The value of the first fact with this label.
+    fileprivate func fact(_ label: String) -> String? { facts.first { $0.label == label }?.value }
 }

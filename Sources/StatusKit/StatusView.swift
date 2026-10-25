@@ -20,8 +20,11 @@ public struct StatusModule: MacPatModule {
 @MainActor @Observable
 public final class StatusModel {
     public private(set) var snapshot = Snapshot()
+    /// One model for the window and the menu bar, so the machine is sampled once, not twice.
+    public static let shared = StatusModel()
     private let sampler = Sampler()
     private var task: Task<Void, Never>?
+    private var watchers = 0
 
     private var fixed = false
 
@@ -34,7 +37,9 @@ public final class StatusModel {
     }
 
     public func start(every seconds: Double = 2) {
-        guard task == nil, !fixed else { return }
+        guard !fixed else { return }
+        watchers += 1
+        guard task == nil else { return }
         let sampler = sampler
         task = Task { [weak self] in
             while !Task.isCancelled {
@@ -46,16 +51,30 @@ public final class StatusModel {
     }
 
     public func stop() {
+        watchers = max(0, watchers - 1)
+        guard watchers == 0 else { return }
         task?.cancel()
         task = nil
     }
 }
 
 struct StatusView: View {
-    @State var model = StatusModel()
-
+    @State var model = StatusModel.shared
     var body: some View {
         let s = model.snapshot
+        if !s.ready {
+            VStack(spacing: 8) {
+                PatMascot(.scanning).frame(width: 72, height: 72)
+                Text("Reading…")
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .modifier(Watching(model: model))
+        } else {
+            readings(s).modifier(Watching(model: model))
+        }
+    }
+
+    private func readings(_ s: Snapshot) -> some View {
         RetroScroll {
             VStack(alignment: .leading, spacing: 14) {
                 Meter(title: "CPU", value: s.cpu, detail: "\(Int(s.cpu * 100))% busy across all cores")
@@ -85,8 +104,32 @@ struct StatusView: View {
             }
             .padding(16)
         }
-        .onAppear { model.start() }
-        .onDisappear { model.stop() }
+    }
+}
+
+/// Samples only while the screen is on show, not while it waits behind another module.
+private struct Watching: ViewModifier {
+    let model: StatusModel
+    @Environment(\.moduleActive) private var active
+    @State private var watching = false
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: active, initial: true) { _, now in
+                if now && !watching {
+                    model.start()
+                    watching = true
+                } else if !now && watching {
+                    model.stop()
+                    watching = false
+                }
+            }
+            .onDisappear {
+                if watching {
+                    model.stop()
+                    watching = false
+                }
+            }
     }
 }
 
@@ -134,7 +177,7 @@ struct ProcList: View {
 
 /// The compact readout inside the menu bar menu.
 public struct StatusMenuLines: View {
-    @State private var model = StatusModel()
+    @State private var model = StatusModel.shared
 
     public init() {}
 

@@ -41,10 +41,12 @@ public struct Step: Identifiable, Hashable, Sendable {
     public var action: Action
     /// Chosen when the scan finishes. Only safe steps should be.
     public var preselected: Bool
+    /// When the file last changed, if the scan already knew. Not part of the plan fingerprint.
+    public var modified: Date?
 
     public init(
         group: String, title: String, bytes: Int64 = 0, risk: Risk, reason: String, facts: [Fact] = [], action: Action,
-        preselected: Bool? = nil, id: String? = nil
+        preselected: Bool? = nil, id: String? = nil, modified: Date? = nil
     ) {
         self.group = group
         self.title = title
@@ -54,6 +56,7 @@ public struct Step: Identifiable, Hashable, Sendable {
         self.facts = facts
         self.action = action
         self.preselected = preselected ?? (risk == .safe)
+        self.modified = modified
         self.id = id ?? Step.key(action)
     }
 

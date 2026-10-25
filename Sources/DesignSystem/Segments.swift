@@ -20,6 +20,7 @@ public struct RetroSegments<Value: Hashable>: View {
             ForEach(options, id: \.0) { value, title in
                 Button(title) { selection = value }
                     .buttonStyle(RetroTabStyle(selected: value == selection))
+                    .accessibilityAddTraits(value == selection ? .isSelected : [])
             }
         }
         .padding(1)

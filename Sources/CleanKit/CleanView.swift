@@ -26,7 +26,8 @@ public enum CleanSetup {
         do {
             let targets = try RuleLoader.load(from: RuleLoader.bundledDirectory, home: home, zones: zones)
             let model = PlanModel(executor: executor(zones, home, projects)) { [] }
-            model.setSource(source(targets, zones, home, projects))
+            model.setStreamingSource(stream(targets, zones, home, projects))
+            model.remember(as: "clean")
             return .success(model)
         } catch let error as RuleError {
             return .failure(error)
@@ -39,6 +40,14 @@ public enum CleanSetup {
         let all = projects.map { zones.union(ProjectScanner(root: $0).zones) } ?? zones
         let system = Zones(roots: ["/Library/Caches", "/Library/Logs"].map { URL(filePath: $0) }, refusesApple: true)
         return Executor(zones: all, system: system, home: home, log: .standard(home: home))
+    }
+
+    static func stream(_ targets: [Target], _ zones: Zones, _ home: URL, _ projects: URL?)
+        -> @Sendable (@escaping PlanModel.Batch) async
+        -> Void
+    {
+        let source = CleanSource(targets: targets, zones: zones, home: home, projects: projects)
+        return { batch in await source.stream(batch) }
     }
 
     static func source(_ targets: [Target], _ zones: Zones, _ home: URL, _ projects: URL?) -> @Sendable () async -> [Step] {
@@ -68,20 +77,26 @@ struct CleanView: View {
     var body: some View {
         switch setup {
         case .failure(let error):
-            VStack(spacing: 8) {
-                Text("Rules failed to load").bold()
-                Text(String(describing: error))
+            VStack(spacing: 0) {
+                RetroBanner(.warning, "The Clean rules failed to load: \(String(describing: error))") {
+                    Button("Retry") { setup = CleanSetup.make(projects: CleanView.savedProjects) }
+                }
+                Spacer()
             }
-            .padding()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .success(let model):
-            PlanView(model: model, layout: .grid, empty: "Nothing to clean.") { projectsBar(model) }
+            PlanView(
+                model: model, layout: .grid,
+                intro: Intro(
+                    "clean", "Scan only reads. It looks for caches, logs, and build leftovers. Nothing changes until you Preview, then Run."
+                ),
+                empty: "Nothing to clean."
+            ) { projectsBar(model) }
         }
     }
 
     private func projectsBar(_ model: PlanModel) -> some View {
         VStack(spacing: 0) {
-            HStack {
+            RetroToolbar {
                 Text("Project build folders:").bold()
                 Text(projectsPath.isEmpty || demo ? "off" : PathFormat.short(URL(filePath: projectsPath))).lineLimit(1).truncationMode(
                     .middle)
@@ -90,9 +105,6 @@ struct CleanView: View {
                     .help("Look for node_modules, target, .build, and so forth inside one folder.")
                 if !projectsPath.isEmpty { Button("Turn Off") { set(nil) } }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            RetroRule(thickness: 1)
             if badFolder {
                 RetroBanner(.warning, "Pick a folder inside your home folder. Not home itself, and not a system folder.")
             }

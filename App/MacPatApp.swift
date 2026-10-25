@@ -15,6 +15,24 @@ import UninstallKit
     CleanModule(), PersistenceModule(), UninstallModule(), AnalyzeModule(), StatusModule(), OptimizeModule(),
 ]
 
+/// The Plan menu. It acts on whichever module is on screen.
+struct PlanCommands: Commands {
+    @FocusedValue(\.planActions) private var plan
+
+    var body: some Commands {
+        CommandMenu("Plan") {
+            Button("Scan") { plan?.scan() }
+                .keyboardShortcut("r", modifiers: .command).disabled(plan?.canScan != true)
+            Button("Preview") { plan?.preview() }
+                .keyboardShortcut("p", modifiers: [.command, .shift]).disabled(plan?.canPreview != true)
+            Button("Show Commands") { plan?.toggleCommands() }
+                .keyboardShortcut("k", modifiers: [.command, .shift]).disabled(plan == nil)
+            Button("Close Detail") { plan?.closeDetail() }
+                .disabled(plan?.detailOpen != true)
+        }
+    }
+}
+
 extension Notification.Name {
     static let selectModule = Notification.Name("io.github.patsaade.macpat.selectModule")
 }
@@ -38,8 +56,11 @@ struct MacPatApp: App {
             #endif
         }
         .windowStyle(.hiddenTitleBar)
+        .defaultSize(width: 1100, height: 720)
+        .windowResizability(.contentMinSize)
         .windowBackgroundDragBehavior(.enabled)
         .commands {
+            PlanCommands()
             CommandGroup(after: .sidebar) {
                 ForEach(Array(modules.enumerated()), id: \.element.id) { index, module in
                     Button(module.title) {
@@ -53,7 +74,10 @@ struct MacPatApp: App {
         MenuBarExtra {
             StatusMenuLines()
             Divider()
-            Button("Open MacPat") { openWindow(id: "main") }
+            Button("Open MacPat") {
+                openWindow(id: "main")
+                NSApp.activate()
+            }
             Divider()
             Button("Quit MacPat") { NSApplication.shared.terminate(nil) }.keyboardShortcut("q")
         } label: {

@@ -1,6 +1,6 @@
 # Remove a persistence item
 
-1. Open **Persistence**.
+1. Open **Startup Items**.
 2. Pick an action. **Disable** stops the job and keeps it from starting, and the file stays. **Remove** stops it and moves its file to the Trash. **Re-enable** lists jobs you disabled.
 3. Open a group and read the reason. Orphans are safe: their program is gone. Unusual items need a look, not panic.
 4. Tick what you want gone. Click **Preview**, then the action button.

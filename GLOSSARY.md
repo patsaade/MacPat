@@ -29,7 +29,7 @@ One file or folder found inside a Target, with its size.
 _Avoid_: Entry, result
 
 **Scan**:
-Looking for Items. It reads. It never changes anything.
+Looking for Items. It reads. It never changes anything. It can be stopped, and what it found so far stays.
 _Avoid_: Search, crawl
 
 **Step**:
@@ -55,6 +55,8 @@ _Avoid_: Simulate, test run
 **Persistence item**:
 Anything that starts on its own: a launch job, a helper, a cron line, a hook, a plugin, and so forth.
 _Avoid_: Startup item, autorun, login item
+
+The tab that lists them is titled Startup Items. That is a label on the screen for people, not a word for code or docs.
 
 **Orphan**:
 A Persistence item whose program is gone, or a Library file named for an app that is no longer installed.

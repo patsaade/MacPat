@@ -370,3 +370,29 @@ final class Log: @unchecked Sendable {
         for tool in Tool.allCases { #expect(page.contains(tool.rawValue), "\(tool.rawValue) missing from commands.md") }
     }
 }
+
+struct StopTests {
+    @Test func stopBetweenStepsLeavesTheRestUnrun() throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "macpat-stop-\(UUID().uuidString)").resolvingSymlinksInPath()
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let files = try (0..<4).map { i -> URL in
+            let url = root.appending(path: "f\(i)")
+            try Data("x".utf8).write(to: url)
+            return url
+        }
+        let steps = files.map { Step(group: "G", title: $0.lastPathComponent, bytes: 1, risk: .safe, reason: "r", action: .trash($0)) }
+        let plan = Plan(steps)
+        let log = Log()
+        let executor = Executor(zones: Zones(roots: [root]), dispose: { log.add($0) })
+        let out = executor.run(plan, previewed: plan.fingerprint, dryRun: false) { done, _ in done < 2 }
+        #expect(out.count == 2)
+        #expect(out.skipped == 2)
+        #expect(log.urls.count == 2)
+    }
+
+    @Test func concurrentMapKeepsOrder() {
+        #expect(concurrentMap(Array(0..<200)) { $0 * 2 } == (0..<200).map { $0 * 2 })
+        #expect(concurrentMap([Int]()) { $0 }.isEmpty)
+    }
+}

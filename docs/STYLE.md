@@ -50,6 +50,10 @@ The system monospaced font, through text styles. `Retro.font` is body. Rows use 
 | `PlanGrid` | The Grid. See below. |
 | `PatMascot` | The hand and the Mac. Pats while scanning, once when done, still when empty. |
 
+## Toolbar and first run
+
+`RetroToolbar` is the strip at the top of a screen: controls on one line, 12 across and 8 down, a rule under it. Every screen uses it, so the spacing never drifts. The first time you open a module, a note says what Scan looks at and that nothing changes until Run. **Got It** hides it for good.
+
 ## The scrollbar
 
 A dither track, boxed arrows, a square thumb with grip lines. Hover adds an inner edge. Dragging inverts the thumb. Click the track to page. It is drawn over the real scroll view, which keeps its own bar hidden. Trackpad inertia, rubber-banding, paging keys, and VoiceOver scrolling all still work. It reads and sets the scroll position and nothing else. When nothing scrolls it fades and ignores clicks.
@@ -61,8 +65,10 @@ A dither track, boxed arrows, a square thumb with grip lines. Hover adds an inne
 - Under the name, one line of reason. Everything else is in the detail pane. Click a name to open it. The checkbox only toggles.
 - Keys: arrows move the row, Space toggles it, Return opens the pane, Escape closes it.
 - Show commands expands the command under every row.
+- Plan menu: Scan (Command-R), Preview (Shift-Command-P), Show Commands (Shift-Command-K), Close Detail.
+- While a scan runs, rows appear as targets finish, with a count and Cancel. While a run goes, the footer shows "Running 4 of 12" and Stop.
 
-Clean uses the grid. Other modules keep stacked rows until we move them.
+Clean, Startup Items, Uninstall, Optimize, and Analyze's Large and old tab use the grid. Sort and open groups are remembered between launches.
 
 ## Motion
 

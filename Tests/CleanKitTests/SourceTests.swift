@@ -63,3 +63,41 @@ import Testing
         #expect(ProjectScanner(root: FileManager.default.homeDirectoryForCurrentUser).steps().isEmpty)
     }
 }
+
+struct NeedsAccessTests {
+    @Test func unreadableFolderIsReportedNotHidden() throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "macpat-\(UUID().uuidString)")
+        let locked = root.appending(path: "Locked")
+        try FileManager.default.createDirectory(at: locked, withIntermediateDirectories: true)
+        try FileManager.default.setAttributes([.posixPermissions: 0], ofItemAtPath: locked.path)
+        defer {
+            try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: locked.path)
+            try? FileManager.default.removeItem(at: root)
+        }
+        let target = Target(id: "t", name: "Locked", summary: "s", risk: .safe, paths: [locked])
+        let report = TargetScanner(zones: Zones(roots: [root])).report(target)
+        #expect(report.items.isEmpty)
+        #expect(report.unreadable == [locked])
+    }
+
+    @Test func missingFolderIsNotAnError() {
+        let gone = FileManager.default.temporaryDirectory.appending(path: "macpat-\(UUID().uuidString)")
+        let target = Target(id: "t", name: "Gone", summary: "s", risk: .safe, paths: [gone])
+        let report = TargetScanner(zones: Zones(roots: [gone.deletingLastPathComponent()])).report(target)
+        #expect(report.unreadable.isEmpty)
+    }
+}
+
+struct GuardedFolderTests {
+    @Test func foldersBehindPrivacyChecksRunLast() {
+        let home = URL(filePath: "/Users/pat")
+        let source = CleanSource(targets: [], zones: Zones(roots: []), home: home)
+        func target(_ path: String) -> Target {
+            Target(id: path, name: path, summary: "s", risk: .safe, paths: [home.appending(path: path)])
+        }
+        #expect(source.guarded(target("Library/Mail/V10/Mail Downloads")))
+        #expect(source.guarded(target("Downloads")))
+        #expect(source.guarded(target("Library/Application Support/MobileSync/Backup")))
+        #expect(!source.guarded(target("Library/Caches")))
+    }
+}

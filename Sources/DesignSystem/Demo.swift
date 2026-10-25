@@ -16,6 +16,7 @@
         public static func model(_ steps: [Step], zones: [String] = [], expanded: [String] = [], preview: Bool = false) async -> PlanModel {
             let zones = Zones(roots: zones.map(url))
             let model = PlanModel(executor: Executor(zones: zones, home: home, dispose: { _ in }, runner: .none)) { steps }
+            model.forSnapshot = true
             await model.scan()
             model.expanded = Set(expanded)
             if preview { await model.preview() }
