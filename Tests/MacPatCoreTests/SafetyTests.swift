@@ -384,11 +384,17 @@ struct StopTests {
         let steps = files.map { Step(group: "G", title: $0.lastPathComponent, bytes: 1, risk: .safe, reason: "r", action: .trash($0)) }
         let plan = Plan(steps)
         let log = Log()
-        let executor = Executor(zones: Zones(roots: [root]), dispose: { log.add($0) })
+        let actions = ActionLog(url: root.appending(path: "log/actions.jsonl"))
+        let executor = Executor(zones: Zones(roots: [root]), dispose: { log.add($0) }, log: actions)
         let out = executor.run(plan, previewed: plan.fingerprint, dryRun: false) { done, _ in done < 2 }
         #expect(out.count == 2)
         #expect(out.skipped == 2)
+        #expect(out.notRun == [steps[2].id, steps[3].id])
         #expect(log.urls.count == 2)
+        // The log must not claim the two that never ran.
+        let text = try String(contentsOf: actions.url, encoding: .utf8)
+        #expect(text.components(separatedBy: "\"done\"").count - 1 == 2)
+        #expect(text.components(separatedBy: "\"not run\"").count - 1 == 2)
     }
 
     @Test func concurrentMapKeepsOrder() {

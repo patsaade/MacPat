@@ -16,7 +16,8 @@ public struct Outcome: Equatable, Sendable {
     /// Set when the whole run was refused before any step ran.
     public var refused: String?
     /// Steps left unrun because the user stopped the run. Each step that did start finished.
-    public var skipped = 0
+    public var notRun: [String] = []
+    public var skipped: Int { notRun.count }
 
     public init(dryRun: Bool) { self.dryRun = dryRun }
 
@@ -68,7 +69,9 @@ public struct Executor: Sendable {
         let total = plan.steps.count
         for (index, step) in plan.steps.enumerated() where done.insert(step.id).inserted {
             if let progress, !progress(index, total) {
-                outcome.skipped = total - index
+                done.remove(step.id)  // the `where` above counted this one, but it never ran
+                var seen = Set<String>()
+                outcome.notRun = plan.steps[index...].map(\.id).filter { !done.contains($0) && seen.insert($0).inserted }
                 break
             }
             do {

@@ -26,7 +26,12 @@ public struct ActionLog: Sendable {
     }
 
     public func append(_ plan: Plan, _ outcome: Outcome) {
-        let rows = plan.steps.map { Entry.Row(command: $0.display, result: outcome.failure(for: $0).map { "failed: \($0)" } ?? "done") }
+        // A stopped run lists what it never reached as "not run", so the log never claims a move that didn't happen.
+        let rows = plan.steps.map { step in
+            Entry.Row(
+                command: step.display,
+                result: outcome.notRun.contains(step.id) ? "not run" : outcome.failure(for: step).map { "failed: \($0)" } ?? "done")
+        }
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]

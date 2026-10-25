@@ -75,7 +75,7 @@ public struct PlanView<Header: View>: View {
             toggleCommands: { model.showCommands.toggle() },
             closeDetail: { model.paneOpen = false },
             canScan: !model.scanning && !model.working,
-            canPreview: !model.chosen.isEmpty && !model.working,
+            canPreview: !model.chosen.isEmpty && !model.working && !model.scanning,
             detailOpen: model.paneOpen)
     }
 
@@ -198,11 +198,11 @@ public struct PlanView<Header: View>: View {
                 .disabled(model.scanning || model.working)
                 .help("Look again. Nothing is changed. Command-R.")
             Button("Preview") { Task { await model.preview() } }
-                .disabled(model.chosen.isEmpty || model.working)
+                .disabled(model.chosen.isEmpty || model.working || model.scanning)
                 .help("A dry run. Checks every item and changes nothing. Shift-Command-P.")
             Button(runTitle) { confirming = true }
                 .fixedSize()
-                .disabled(model.previewed == nil || model.working)
+                .disabled(model.previewed == nil || model.working || model.scanning)
                 .help("Preview first. Then this unlocks.")
         }
         .padding(12)

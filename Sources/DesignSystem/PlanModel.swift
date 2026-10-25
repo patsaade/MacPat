@@ -273,6 +273,7 @@ public final class PlanModel {
     }
 
     private func finish(_ found: [Step]) {
+        previewed = nil  // rows may have changed under any preview taken while the scan ran
         let ignore = ignore
         steps = found.filter { step in step.url.map { !ignore.contains($0) } ?? true }
         var dates: [String: Date] = [:]

@@ -17,5 +17,5 @@ public func concurrentMap<T: Sendable, U: Sendable>(_ items: [T], _ transform: @
 
 private struct Slots<U>: @unchecked Sendable {
     let base: UnsafeMutablePointer<U?>
-    func write(_ value: U, at index: Int) { (base + index).initialize(to: value) }
+    func write(_ value: U, at index: Int) { base[index] = value }
 }
