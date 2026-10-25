@@ -34,7 +34,9 @@ MacPat is a small, open-source Mac cleaner for Apple silicon. Before it touches 
 - **Trash, not delete.** Even root-owned files go to your Trash. Two optional commands delete for good, and they say so.
 - **Short lists.** It can only touch a fixed set of folders and run a fixed set of commands. Admin steps use the macOS password prompt each time.
 
-Read the [disclaimer](docs/explanation/disclaimer.md) first. This tool deletes files.
+## Disclaimer
+
+MacPat moves files to the Trash, runs a few system commands, and turns off things that start on their own. Back up before you use it. It is provided as is, without warranty of any kind, under the [MIT license](LICENSE). You choose what runs, and what you confirm is on you. It is not a security product, and nothing here promises a faster Mac. Read the full [disclaimer](docs/explanation/disclaimer.md).
 
 ## Install
 

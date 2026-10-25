@@ -11,8 +11,8 @@ What it reads, all on your Mac:
 What it keeps, all on your Mac:
 
 - `~/Library/Logs/MacPat/actions.jsonl`: one line per real run, listing what ran and how it went. Delete it whenever you like.
-- Its preferences: your "Never touch" list and the projects folder you picked.
+- Its preferences: your "Never touch" list, the projects folder you picked, the module you were on, each module's sort and open group names, which first-run notes you dismissed, and whether you hid the Full Disk Access banner. Group names come from MacPat's own rules, not from your files.
 
 Plans you export go where you put them.
 
-Full Disk Access is needed to see every folder. macOS asks you for it, and you can take it back at any time in System Settings. Updates will come from Homebrew, not from the app.
+Full Disk Access is needed to see every folder. macOS asks you for it, and you can take it back at any time in System Settings. There is no updater. New versions come from this repository.
