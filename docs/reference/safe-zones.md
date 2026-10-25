@@ -10,7 +10,7 @@ A zone that is a symlink, or sits behind one, is dropped.
 
 ## Other modules
 
-- **Persistence:** `~/Library/LaunchAgents`, `~/Library/Spotlight`, `~/Library/QuickLook`.
+- **Startup Items:** `~/Library/LaunchAgents`, `~/Library/Spotlight`, `~/Library/QuickLook`.
 - **Uninstall:** the Library folders it searches, `~/Applications`, and `/Applications`.
 - **Analyze:** `~/Desktop`, `~/Documents`, `~/Downloads`, `~/Movies`, `~/Music`, `~/Pictures`, `~/Developer`, `~/Public`. Only files you pick or that are big and old, and never preselected.
 - **Projects in Clean:** the folder you pick, if it isn't your home folder or a system folder.

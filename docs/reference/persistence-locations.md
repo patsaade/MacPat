@@ -1,6 +1,6 @@
 # Persistence locations
 
-Where Persistence looks, and what it can do there.
+Where Startup Items looks, and what it can do there.
 
 | Place | Path | MacPat can |
 | --- | --- | --- |

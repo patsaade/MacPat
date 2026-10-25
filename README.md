@@ -5,14 +5,17 @@
   </picture>
 </p>
 
-MacPat is a small, open-source Mac cleaner for Apple silicon. Before it touches anything, it shows you each step it would take, why, and the exact command behind it.
+[![CI](https://github.com/patsaade/macpat/actions/workflows/ci.yml/badge.svg)](https://github.com/patsaade/macpat/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-black.svg)](LICENSE)
+
+MacPat is a small, open-source Mac cleaner for Apple silicon. Before it touches anything, it shows you each item it would take, why, and the exact command behind it.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/clean-flow-dark.gif">
   <img src="docs/media/clean-flow-light.gif" alt="Clean: scan, open a group, preview, show the commands.">
 </picture>
 
-**Status:** early. It works on my Mac. Back up before you use it on yours.
+**Status:** version 0.1.0, early. It works on my Mac. Back up before you use it on yours.
 
 ## What it does
 
@@ -35,26 +38,38 @@ Read the [disclaimer](docs/explanation/disclaimer.md) first. This tool deletes f
 
 ## Install
 
-Not released yet. Build it yourself:
+There is no download yet. The app isn't signed with a developer certificate or notarized, so I won't hand out a binary that macOS will fight you over. Build it yourself:
 
 ```sh
+git clone https://github.com/patsaade/macpat.git
+cd macpat
 brew install xcodegen
 xcodegen generate
 open MacPat.xcodeproj
 ```
 
-You need macOS 26 or later, an Apple silicon Mac, and Xcode 26 or later. See [build from source](docs/how-to/build-from-source.md).
+You need macOS 26 or later, an Apple silicon Mac, and Xcode 26 or later. Press Run. See [build from source](docs/how-to/build-from-source.md).
+
+## First run
+
+Scan only reads. Nothing changes until you Preview, then Run. macOS may ask to let MacPat into folders such as Downloads and Mail. If you say no, those folders show as locked "Needs access" rows, not as empty. Full Disk Access shows everything. A build you made yourself is signed only for your Mac, so macOS asks again after each rebuild.
+
+Command-1 to 6 switch modules. The Plan menu has Scan (Command-R), Preview (Shift-Command-P), and Show Commands. Everything MacPat moves is listed in `~/Library/Logs/MacPat`.
+
+## Versions
+
+Releases follow [semantic versioning](https://semver.org). Before 1.0, a minor version can change how things work. [CHANGELOG.md](CHANGELOG.md) lists what changed. Tags are `v0.1.0` and so forth.
 
 ## Screens
 
 <details>
-<summary>Persistence, Uninstall, Analyze, Status, Optimize</summary>
+<summary>Startup Items, Uninstall, Analyze, Status, Optimize</summary>
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/media/persistence-flow-dark.gif"><img src="docs/media/persistence-flow-light.gif" alt="Persistence: an orphaned agent, a signed updater, and an unusual script, with their commands."></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/media/persistence-flow-dark.gif"><img src="docs/media/persistence-flow-light.gif" alt="Startup Items: an orphaned agent, a signed updater, and an unusual script, with their commands."></picture>
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/media/uninstall-flow-dark.gif"><img src="docs/media/uninstall-flow-light.gif" alt="Uninstall: an app and its leftovers, each with a reason, then the preview."></picture>
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/media/clean-pane-dark.png"><img src="docs/media/clean-pane-light.png" alt="Clean as a grid, with the detail pane open on one step."></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/media/clean-pane-dark.png"><img src="docs/media/clean-pane-light.png" alt="Clean as a grid, with the detail pane open on one item."></picture>
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/media/analyze-dark.png"><img src="docs/media/analyze-light.png" alt="Analyze: disk use, purgeable space, and folder sizes."></picture>
 
