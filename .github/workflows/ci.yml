@@ -1,0 +1,34 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Repo rules
+        run: scripts/check.sh
+      - name: Tests
+        run: swift test
+      - name: Tests (address sanitizer)
+        run: swift test --sanitize=address
+      - name: Tests (thread sanitizer)
+        run: swift test --sanitize=thread
+      - name: Build app
+        run: |
+          brew install xcodegen gitleaks
+          xcodegen generate
+          xcodebuild -project MacPat.xcodeproj -scheme MacPat -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO build
+      - name: Secrets scan
+        run: gitleaks git --no-banner --redact

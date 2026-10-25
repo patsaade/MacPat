@@ -1,0 +1,46 @@
+name: MacPat
+options:
+  bundleIdPrefix: io.github.patsaade
+  deploymentTarget:
+    macOS: "26.0"
+packages:
+  MacPat:
+    path: .
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    ARCHS: arm64
+    ONLY_ACTIVE_ARCH: YES
+    SWIFT_TREAT_WARNINGS_AS_ERRORS: YES
+    GCC_TREAT_WARNINGS_AS_ERRORS: YES
+    ENABLE_HARDENED_RUNTIME: YES
+    ENABLE_APP_SANDBOX: NO
+    CODE_SIGN_STYLE: Automatic
+    CODE_SIGN_IDENTITY: "-"
+targets:
+  MacPat:
+    type: application
+    platform: macOS
+    sources: [App]
+    dependencies:
+      - package: MacPat
+        product: CleanKit
+      - package: MacPat
+        product: DesignSystem
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.patsaade.macpat
+        MARKETING_VERSION: "0.0.0" # x-release-please-version
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: MacPat
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+        INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright (c) 2026 Patrick Saade. MIT License."
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+schemes:
+  MacPat:
+    build:
+      targets:
+        MacPat: all
+    test:
+      targets: []
