@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.1](https://github.com/patsaade/MacPat/compare/v0.1.0...v0.1.1) (2026-10-26)
+
+
+### Bug Fixes
+
+* log unrun items as not run when a run is stopped ([32316a1](https://github.com/patsaade/MacPat/commit/32316a15ce2bb3e8c25c20c266f4cdd75f363b95))
+
+
+### Documentation
+
+* close MacPat to contributions, keep private security reports ([c915268](https://github.com/patsaade/MacPat/commit/c91526892ce5938b41c3591a49527e402406eaf5))
+
 ## 0.1.0 (2026-10-25)
 
 First public release. Early. It works on my Mac.
