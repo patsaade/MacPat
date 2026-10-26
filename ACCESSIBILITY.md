@@ -31,4 +31,4 @@ The goal is every control usable with VoiceOver, the keyboard alone, and your sy
 
 ## Report a barrier
 
-Open an issue with the label `accessibility`. Say what you use and what failed. These get fixed before features.
+Report it privately through the Security tab (see [SECURITY.md](SECURITY.md)). Say what you use and what failed. These get fixed before features.

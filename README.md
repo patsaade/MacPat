@@ -84,7 +84,7 @@ The images are the real views with made-up data. `scripts/snapshots.sh` makes th
 
 ## Docs
 
-[Tutorials, how-tos, reference, and explanation](docs/README.md). Also: [style guide](docs/STYLE.md), [privacy](PRIVACY.md), [security](SECURITY.md), [accessibility](ACCESSIBILITY.md), [colophon](COLOPHON.md), [contributing](CONTRIBUTING.md).
+[Tutorials, how-tos, reference, and explanation](docs/README.md). Also: [style guide](docs/STYLE.md), [privacy](PRIVACY.md), [security](SECURITY.md), [accessibility](ACCESSIBILITY.md), [colophon](COLOPHON.md), [contributions](CONTRIBUTING.md).
 
 ## License
 
