@@ -8,7 +8,7 @@
 [![CI](https://github.com/patsaade/MacPat/actions/workflows/ci.yml/badge.svg)](https://github.com/patsaade/MacPat/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-black.svg)](LICENSE)
 
-MacPat is a small, open-source Mac cleaner for Apple silicon. Before it touches anything, it shows you each item it would take, why, and the exact command behind it.
+MacPat is a free, open-source Mac cleaner for Apple silicon. It clears caches and logs, removes apps with their leftovers, lists launch agents and login items, and finds what fills your disk. Before it touches anything, it shows you each item it would take, why, and the exact command behind it.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/clean-flow-dark.gif">
